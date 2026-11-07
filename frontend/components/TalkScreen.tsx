@@ -8,6 +8,7 @@ import HealthBadge from "@/components/HealthBadge";
 import HelperFix from "@/components/HelperFix";
 import HelperTurnInput from "@/components/HelperTurnInput";
 import HoldToRecord from "@/components/HoldToRecord";
+import ListenerView from "@/components/ListenerView";
 import ThinkingAnimation from "@/components/ThinkingAnimation";
 import { useUser } from "@/components/UserGate";
 import { ApiError, sendFeedback, translate, type TranslateResult } from "@/lib/api";
@@ -137,6 +138,7 @@ export default function TalkScreen() {
             <p className="text-center text-4xl font-bold leading-tight sm:text-5xl" lang={stage.result.language} data-testid="listener-sentence">
               {stage.result.sentence}
             </p>
+            {!stage.undo && <ListenerView sentence={stage.result.sentence} language={stage.result.language} />}
             {stage.undo && (
               <CountdownThumbDown
                 seconds={UNDO_SECONDS}
