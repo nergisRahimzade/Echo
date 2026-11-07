@@ -52,7 +52,7 @@ def test_known_phrase_is_spoken(client, user_id, fake_db, fake_ai):
     assert set(body["score_parts"]) == {"score", "agent_confidence", "candidate_agreement", "sound_match"}
     assert body["score_parts"]["sound_match"] > 0.9  # same audio as the enrolled sample
     # the agent saw the sound match and the personal words; Whisper got the user's language + hints
-    assert fake_ai["seen"]["agent_input"]["matches"][0][0] == "Su istiyorum"
+    assert fake_ai["seen"]["agent_input"]["matches"][0][0] == "Su istiyorum"  # (text, score, corrected)
     assert fake_ai["seen"]["agent_input"]["personal_words"] == [("Zeynep", "person")]
     assert fake_ai["seen"]["whisper_language"] == "tr" and "Zeynep" in fake_ai["seen"]["prompt"]
 

@@ -63,3 +63,23 @@ def test_approval_stores_text_embedding(client, user_id, fake_db, monkeypatch):
     client.post("/feedback", json={"utterance_id": utt["utterance_id"], "verdict": "down", "final_text": "Günaydın."})
     doc = asyncio.run(fake_db.utterances.find_one({"_id": ObjectId(utt["utterance_id"])}))
     assert doc["text_vector"] == [0.5, 0.5]
+
+
+def test_helper_fix_is_marked_and_weighted_for_the_next_try(client, user_id, monkeypatch):
+    """After a helper fix, the next similar recording shows the agent a helper-corrected match."""
+    seen = []
+    fake_ai(monkeypatch, "Müzik.", 0.4, seen)
+    utt = say(client, user_id, seed=11)
+    client.post("/feedback", json={"utterance_id": utt["utterance_id"], "verdict": "down"})
+    client.post("/feedback", json={"utterance_id": utt["utterance_id"], "verdict": "down", "final_text": "Bugün çok mutluyum"})
+    say(client, user_id, seed=11)
+    text, score, corrected = seen[-1]["matches"][0]
+    assert text == "Bugün çok mutluyum" and corrected is True and score >= 0.99  # weighted x1.15, capped at 1
+    assert "Müzik." in seen[-1]["rejected"]  # and the wrong guess is "not this"
+
+
+def test_prompt_marks_helper_corrected_matches():
+    from app.agent.prompt import build_user_message
+
+    msg = build_user_message(["mzk"], [("Bugün çok mutluyum", 1.0, True), ("Evet", 0.3, False)], "tr")
+    assert '"Bugün çok mutluyum" (1.00, helper-corrected)' in msg and '"Evet" (0.30)' in msg

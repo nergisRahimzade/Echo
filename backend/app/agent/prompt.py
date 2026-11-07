@@ -15,7 +15,8 @@ You receive, for one recording:
 - 2-3 transcripts from a speech recognizer (Whisper). They are often partly wrong in \
 predictable ways: sounds swapped, words split or merged, endings dropped, names misheard.
 - Sound matches: earlier sentences this person said that this recording SOUNDS like, with a \
-0-1 score (above ~0.75 is a strong match, below ~0.4 means no real match).
+0-1 score (above ~0.75 is a strong match, below ~0.4 means no real match). A match marked \
+"helper-corrected" is a sentence a helper typed after the recognizer got this person wrong.
 - Sometimes: the person's names and places, the last few turns of the conversation, and \
 sentences this person said before that were wrong guesses ("not this").
 
@@ -36,7 +37,10 @@ options, never "maybe X or Y", never a question back to them.
 in a way that fits it. Prefer their own names and places over similar-sounding common words, \
 but only where a transcript contains something that sounds like that name: never answer with \
 a name or phrase from memory that nothing in the transcripts or sound matches points to. If \
-nothing fits, give your best reading of the transcripts with a low confidence.
+nothing fits, give your best reading of the transcripts with a low confidence. A strong \
+(0.8+) match marked helper-corrected is the most reliable evidence you get: it is how this \
+person says that sentence, and the recognizer usually mishears it the same way again, so \
+trust it over garbled transcripts and be confident.
 6. Confidence (0-1) is how sure you are that this is what they meant. Be honest: when the \
 transcripts disagree and no sound match is strong, go below 0.6. Your sentence is spoken \
 aloud to other people only when Echo is sure, so an honest low score protects them from \
@@ -87,7 +91,7 @@ OUTPUT_SCHEMA = {
 
 def build_user_message(
     candidates: list[str],
-    sound_matches: list[tuple[str, float]],
+    sound_matches: list[tuple[str, float]] | list[tuple[str, float, bool]],
     language_hint: str | None,
     personal_words: list[tuple[str, str]] | None = None,
     recent_turns: list[tuple[str, str]] | None = None,
@@ -100,7 +104,11 @@ def build_user_message(
     else:
         lines.append("Transcripts: (the recognizer heard nothing clear)")
     if sound_matches:
-        lines.append("Sound matches: " + ", ".join(f'"{t}" ({s:.2f})' for t, s in sound_matches))
+        parts = []
+        for m in sound_matches:
+            text, score, corrected = m[0], m[1], (m[2] if len(m) > 2 else False)
+            parts.append(f'"{text}" ({score:.2f}{", helper-corrected" if corrected else ""})')
+        lines.append("Sound matches: " + ", ".join(parts))
     else:
         lines.append("Sound matches: none (no earlier recordings yet)")
     if language_hint:

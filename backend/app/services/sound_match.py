@@ -27,6 +27,7 @@ class SoundMatch:
     score: float  # 0-1, how much the new recording sounds like this sentence
     source: str  # "enrollment" or "utterance"
     ref_id: str
+    corrected: bool = False  # a helper typed this sentence for an earlier recording
 
 
 def dtw_cost(a: np.ndarray, b: np.ndarray) -> float:
@@ -55,7 +56,7 @@ async def load_references(db, user_id: str) -> list[dict]:
     refs = []
     projection = {"text": 1, "audio_vector": 1, "audio_frames": 1}
     async for d in db.enrollment_samples.find({"user_id": user_id, "audio_vector": {"$exists": True}}, projection):
-        refs.append({"id": str(d["_id"]), "text": d["text"], "vector": d["audio_vector"], "frames": d["audio_frames"], "source": "enrollment", "weight": 1.0})
+        refs.append({"id": str(d["_id"]), "text": d["text"], "vector": d["audio_vector"], "frames": d["audio_frames"], "source": "enrollment", "weight": 1.0, "corrected": False})
     # Approved conversation sentences become references too (learning loop, phase 5).
     query = {"user_id": user_id, "status": "approved", "audio_vector": {"$exists": True}}
     async for d in db.utterances.find(query, {**projection, "sentence": 1, "final_text": 1, "was_corrected": 1}):
@@ -66,6 +67,7 @@ async def load_references(db, user_id: str) -> list[dict]:
                 "source": "utterance",
                 # Helper corrections are the most valuable examples: count them a bit more.
                 "weight": get_settings().corrected_match_weight if d.get("was_corrected") else 1.0,
+                "corrected": bool(d.get("was_corrected")),
             })
     return refs
 
@@ -86,7 +88,7 @@ def rank(query: Voiceprint, refs: list[dict], top_k: int = 3) -> list[SoundMatch
         score = min(1.0, cost_to_score(dtw_cost(q_frames, np.asarray(ref["frames"]))) * ref["weight"])
         key = ref["text"].strip().casefold()
         if key not in best or score > best[key].score:
-            best[key] = SoundMatch(text=ref["text"], score=round(score, 4), source=ref["source"], ref_id=ref["id"])
+            best[key] = SoundMatch(text=ref["text"], score=round(score, 4), source=ref["source"], ref_id=ref["id"], corrected=ref.get("corrected", False))
     return sorted(best.values(), key=lambda m: m.score, reverse=True)[:top_k]
 
 

@@ -127,7 +127,7 @@ async def translate(db, user: dict, session_id: str, audio_path: str) -> dict:
         result = await interpret(
             ctx,
             cand_texts,
-            match_pairs,
+            [(m.text, m.score, m.corrected) for m in matches],
             main_language,
             personal_words=[(w["word"], w["kind"]) for w in words],
             recent_turns=[(t["speaker"], t["text"]) for t in turns],
@@ -159,7 +159,7 @@ async def translate(db, user: dict, session_id: str, audio_path: str) -> dict:
             {"text": c.text, "language": c.language, "prompt_used": c.prompt_used, "temperature": c.temperature, "avg_logprob": c.avg_logprob}
             for c in candidates
         ],
-        "sound_matches": [{"text": m.text, "score": m.score, "source": m.source, "ref_id": m.ref_id} for m in matches],
+        "sound_matches": [{"text": m.text, "score": m.score, "source": m.source, "ref_id": m.ref_id, "corrected": m.corrected} for m in matches],
         "sentence": result.sentence,
         "language": language,
         "agent": {"confidence": result.confidence, "language": result.language, "reason": result.reason, "tool_calls": result.tool_calls},
