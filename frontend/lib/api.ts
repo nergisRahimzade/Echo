@@ -141,6 +141,18 @@ export function enroll(params: {
   return request("/enroll", { method: "POST", body: form });
 }
 
+export interface EnrollmentSample {
+  sample_id: string;
+  phrase_id: string | null;
+  text: string;
+  language: Language;
+  created_at: string;
+}
+
+export function getSamples(userId: string): Promise<EnrollmentSample[]> {
+  return request<EnrollmentSample[]>(`/enroll?user_id=${encodeURIComponent(userId)}`);
+}
+
 export function addWords(userId: string, words: PersonalWord[]): Promise<{ ok: boolean }> {
   return postJson("/words", { user_id: userId, words });
 }

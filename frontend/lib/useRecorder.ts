@@ -25,9 +25,12 @@ function pickMimeType(): string {
  */
 export function useRecorder({
   onRecorded,
+  onTooShort,
   maxDurationMs = 60_000,
 }: {
   onRecorded: (rec: Recording) => void;
+  /** Called instead of onRecorded when the clip was too short to be speech. */
+  onTooShort?: () => void;
   maxDurationMs?: number;
 }) {
   const [status, setStatus] = useState<RecorderStatus>("idle");
@@ -43,9 +46,11 @@ export function useRecorder({
   const rafRef = useRef<number | null>(null);
   const stopRequestedRef = useRef(false); // released the button before the mic was ready
   const onRecordedRef = useRef(onRecorded);
+  const onTooShortRef = useRef(onTooShort);
   useEffect(() => {
     onRecordedRef.current = onRecorded;
-  }, [onRecorded]);
+    onTooShortRef.current = onTooShort;
+  }, [onRecorded, onTooShort]);
 
   const stopMeter = () => {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
@@ -111,6 +116,8 @@ export function useRecorder({
       const blob = new Blob(chunksRef.current, { type });
       if (durationMs >= MIN_DURATION_MS && blob.size > 0) {
         onRecordedRef.current({ blob, durationMs, mimeType: type });
+      } else {
+        onTooShortRef.current?.(); // never drop a recording silently
       }
     };
 

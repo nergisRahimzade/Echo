@@ -35,8 +35,22 @@ export default function HoldToRecord({
   disabled?: boolean;
   showModeToggle?: boolean;
 }) {
-  const { status, level, elapsedMs, start, stop, isRecording } = useRecorder({ onRecorded });
+  const [tooShort, setTooShort] = useState(false);
+  const { status, level, elapsedMs, start, stop, isRecording } = useRecorder({
+    onRecorded,
+    onTooShort: () => setTooShort(true),
+  });
   const [mode, setMode] = useState<RecordMode>("hold");
+  // The "hold longer" hint disappears after a few seconds or when a new recording starts.
+  useEffect(() => {
+    if (!tooShort) return;
+    const t = setTimeout(() => setTooShort(false), 3000);
+    return () => clearTimeout(t);
+  }, [tooShort]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset hint when recording starts
+    if (isRecording) setTooShort(false);
+  }, [isRecording]);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount
   useEffect(() => setMode(loadMode()), []);
 
@@ -123,12 +137,19 @@ export default function HoldToRecord({
           onContextMenu={(e) => e.preventDefault()}
           className={`relative flex min-h-[180px] w-full flex-col items-center justify-center gap-3 rounded-3xl px-6 py-8 shadow-lg transition focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-primary disabled:opacity-50 ${
             isRecording ? "scale-[0.98] bg-danger text-white" : "bg-primary text-primary-foreground"
-          }`}
+          } ${tooShort ? "animate-shake" : ""}`}
         >
           <Icon aria-hidden className={`h-16 w-16 ${busy ? "animate-spin" : ""}`} strokeWidth={2.5} />
           <span className="text-2xl font-semibold">{label}</span>
         </button>
       </div>
+
+      {tooShort && (
+        <p role="status" className="flex items-center gap-2 text-lg font-semibold text-danger" data-testid="too-short">
+          <Hand aria-hidden className="h-7 w-7" />
+          {mode === "hold" ? "Hold longer" : "Speak a little longer"}
+        </p>
+      )}
 
       {/* Timer + level bar (visible while recording) */}
       <div className={`flex w-full items-center gap-4 ${isRecording ? "" : "invisible"}`} aria-hidden={!isRecording}>

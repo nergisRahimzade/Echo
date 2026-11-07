@@ -40,7 +40,7 @@ export default function OnboardingPage() {
     try {
       const { user_id } = await createUser(name.trim(), language, consent);
       saveUser({ user_id, name: name.trim(), main_language: language });
-      router.replace("/");
+      router.replace("/enroll"); // next step: teach Echo your voice
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
       setSaving(false);
