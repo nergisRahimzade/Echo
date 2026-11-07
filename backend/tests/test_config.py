@@ -68,3 +68,9 @@ def test_multiple_frontend_origins(monkeypatch):
         "http://localhost:3000",
         "https://echo.vercel.app",
     ]
+
+
+def test_frontend_origin_trailing_slash_ignored(monkeypatch):
+    # "https://echo-web.onrender.com/" pasted from the address bar must still match the browser's Origin.
+    monkeypatch.setenv("FRONTEND_URL", "https://echo-web.onrender.com/")
+    assert load_settings(env_file=None).frontend_origins == ["https://echo-web.onrender.com"]

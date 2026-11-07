@@ -97,7 +97,8 @@ class Settings(BaseSettings):
 
     @property
     def frontend_origins(self) -> list[str]:
-        return [o.strip() for o in self.frontend_url.split(",") if o.strip()]
+        # Browsers send the origin without a trailing slash, so "https://x.com/" would never match.
+        return [o.strip().rstrip("/") for o in self.frontend_url.split(",") if o.strip()]
 
 
 class MissingSettingsError(RuntimeError):

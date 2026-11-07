@@ -55,3 +55,21 @@ python -m scripts.eval_asr tests/audio --enroll-dir tests/audio --limit 10
 `eval_asr` runs each labelled recording through Whisper candidates and sound matching and prints a results table
 (best guess, word error rate, whether sound matching found the right sentence, time per file).
 Point it at real recordings by putting audio files and a `labels.json` (`{"file.webm": {"text": "...", "language": "tr"}}`) in a folder.
+
+## Deploy on Render
+
+`render.yaml` describes both services (Render > New > Blueprint). If you create them by hand instead:
+
+| | API (`echo-api`) | Website (`echo-web`) |
+|---|---|---|
+| Runtime | **Python** (not Node: `backend/` has no package.json) | Node |
+| Root directory | `backend` | `frontend` |
+| Build command | `pip install -r requirements.txt` | `npm ci && npm run build` |
+| Start command | `python -m app` (0.0.0.0, port `$PORT`) | `npm start` (0.0.0.0, port `$PORT`) |
+| Environment | `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `MONGODB_URI`, `ELEVENLABS_API_KEY`, `PYTHON_VERSION=3.14`, `FRONTEND_URL=https://<website>.onrender.com` | `NEXT_PUBLIC_API_URL=https://<api>.onrender.com` |
+
+- MongoDB Atlas > Network Access must allow `0.0.0.0/0`: Render has no fixed IP address.
+- `FRONTEND_URL` is the CORS allow-list (comma-separated for several sites).
+- `NEXT_PUBLIC_API_URL` is baked in at build time: redeploy the website after changing it.
+- ffmpeg comes from the `imageio-ffmpeg` package, so nothing extra needs installing.
+- Render's free disk is wiped on every deploy, so saved recordings in `uploads/` don't survive a redeploy.
