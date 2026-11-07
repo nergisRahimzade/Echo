@@ -60,7 +60,9 @@
     "addWords": "Add names and places",
     "recordAllAgain": "Record the phrases again",
     "progress": "{done} of {total} phrases recorded",
-    "heading": "Echo: teach Echo your voice"
+    "heading": "Echo: teach Echo your voice",
+    "intro": "Repeat these {total} phrases for me to learn your speaking pattern",
+    "finishedHelp": "Press the people icon to add names and places that you use. Press the home icon to start speaking. Press the retry icon to record the phrases again."
   },
   "words": {
     "title": "Names and places",
@@ -100,7 +102,8 @@
     "listenerDialog": "Sentence for the listener. Tap to close.",
     "flip": "Turn upside down for someone sitting opposite",
     "learned": "{n} sentences learned",
-    "heading": "Echo: talk"
+    "heading": "Echo: talk",
+    "intro": "Start speaking by holding the microphone for me to help you"
   },
   "settings": {
     "title": "Settings",
