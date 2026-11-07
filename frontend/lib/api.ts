@@ -17,6 +17,7 @@ export type Verdict = "up" | "down";
 export interface Health {
   status: "ok";
   db: "connected" | "disconnected" | "not configured";
+  features?: { tts: "elevenlabs" | "browser"; embeddings: "voyage" | "spelling" };
 }
 
 export interface Phrase {

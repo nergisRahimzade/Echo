@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from app import db
 from app.config import get_settings
 from app.services.asr import close_shared_client
-from app.routes import enroll, feedback, phrases, translate, turns, users, words
+from app.routes import enroll, feedback, phrases, translate, tts, turns, users, words
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -55,9 +55,18 @@ app.include_router(words.router)
 app.include_router(translate.router)
 app.include_router(turns.router)
 app.include_router(feedback.router)
+app.include_router(tts.router)
 
 
 @app.get("/health")
 async def health() -> dict:
     """Simple "I'm alive" check used by the frontend and the hosting platform."""
-    return {"status": "ok", "db": await db.ping()}
+    return {
+        "status": "ok",
+        "db": await db.ping(),
+        # Which optional features are switched on (the app adapts to them).
+        "features": {
+            "tts": "elevenlabs" if settings.elevenlabs_api_key else "browser",
+            "embeddings": "voyage" if settings.embedding_api_key else "spelling",
+        },
+    }

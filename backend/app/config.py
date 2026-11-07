@@ -59,6 +59,10 @@ class Settings(BaseSettings):
     # different phrase ~0.47), and extra weight for sentences a helper corrected.
     sound_match_scale: float = 0.5
     corrected_match_weight: float = 1.15
+    # ElevenLabs voices (multilingual model, so any voice can speak Turkish and English).
+    elevenlabs_model: str = "eleven_flash_v2_5"
+    elevenlabs_voice_tr: str = "JBFqnCBsd6RMkjVDRZzb"
+    elevenlabs_voice_en: str = "JBFqnCBsd6RMkjVDRZzb"
     # Text embeddings (Voyage AI, multilingual) for Atlas Vector Search.
     # Combined score weights (brief: 0.5 / 0.25 / 0.25; tune with real data) and the default
     # speak-aloud threshold for new users.
