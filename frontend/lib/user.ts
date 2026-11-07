@@ -11,6 +11,8 @@ export interface SavedUser {
   user_id: string;
   name: string;
   main_language: MainLanguage;
+  /** The voice Echo speaks with (GET /voices); missing = the server's default. */
+  voice?: string;
 }
 
 const KEY = "echo.user";

@@ -111,6 +111,27 @@ export interface User {
   main_language: Language | "both";
   threshold: number;
   created_at: string;
+  /** The voice Echo speaks with (an id from GET /voices). */
+  voice: string;
+}
+
+export type VoiceKind = "woman" | "man" | "girl" | "boy";
+
+export interface VoiceOption {
+  id: string;
+  name: string;
+  kind: VoiceKind;
+  /** Short description key: settings.voiceStyles.<style> */
+  style: string;
+}
+
+export interface VoiceList {
+  /** false = the server has no ElevenLabs key; the browser's own voice is used. */
+  enabled: boolean;
+  default: string;
+  voices: VoiceOption[];
+  /** Voice kinds the server has not set up yet (child voices). */
+  missing: VoiceKind[];
 }
 
 /** Sign up. `mainLanguage` "both" = the user mixes Turkish and English. */
@@ -124,6 +145,19 @@ export function createUser(
 
 export function getUser(userId: string): Promise<User> {
   return request<User>(`/users/${encodeURIComponent(userId)}`);
+}
+
+/** Change the user's settings (the voice Echo speaks with). */
+export function updateUser(userId: string, changes: { voice: string }): Promise<User> {
+  return request<User>(`/users/${encodeURIComponent(userId)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(changes),
+  });
+}
+
+export function getVoices(): Promise<VoiceList> {
+  return request<VoiceList>("/voices");
 }
 
 export function getPhrases(lang: Language): Promise<Phrase[]> {
@@ -215,14 +249,14 @@ export function sendFeedback(params: {
   });
 }
 
-/** Returns mp3 audio for the sentence. */
-export async function tts(text: string, language: Language): Promise<Blob> {
+/** Returns mp3 audio for the sentence, in the chosen voice (server default when omitted). */
+export async function tts(text: string, language: Language, voice?: string): Promise<Blob> {
   let res: Response;
   try {
     res = await fetch(`${API_URL}/tts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, language }),
+      body: JSON.stringify({ text, language, voice }),
     });
   } catch {
     throw new ApiError(0, "Cannot reach the Echo server.");

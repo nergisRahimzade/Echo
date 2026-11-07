@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.config import get_settings
 from app.db import get_db
 from app.ids import require_user
+from app.services import voices
 from app.services.phrases import supported_languages
 
 router = APIRouter(tags=["users"])
@@ -49,7 +50,19 @@ class UserOut(BaseModel):
     main_language: str
     threshold: float
     created_at: datetime
+    voice: str  # the voice Echo speaks with (GET /voices)
     threshold_history: list[ThresholdChange] = []
+
+
+class UpdateUser(BaseModel):
+    voice: str
+
+    @field_validator("voice")
+    @classmethod
+    def known_voice(cls, v: str) -> str:
+        if not voices.is_available(v):
+            raise ValueError(f"unknown voice: {v}")
+        return v
 
 
 @router.post("/users", status_code=201)
@@ -72,20 +85,33 @@ async def create_user(body: CreateUser) -> dict:
     return {"user_id": str(result.inserted_id)}
 
 
-@router.get("/users/{user_id}", response_model=UserOut)
-async def get_user(user_id: str) -> UserOut:
-    """Used by the app on start-up to check the saved user still exists."""
-    user = await require_user(get_db(), user_id)
+def user_out(user: dict) -> UserOut:
     return UserOut(
         user_id=str(user["_id"]),
         name=user["name"],
         main_language=user["main_language"],
         threshold=user["threshold"],
         created_at=user["created_at"],
+        voice=voices.get(user.get("voice")).id,
         threshold_history=[
             ThresholdChange(at=c["at"], to=c["to"], reason=c["reason"]) for c in user.get("threshold_history", [])[-5:]
         ],
     )
+
+
+@router.get("/users/{user_id}", response_model=UserOut)
+async def get_user(user_id: str) -> UserOut:
+    """Used by the app on start-up to check the saved user still exists."""
+    return user_out(await require_user(get_db(), user_id))
+
+
+@router.patch("/users/{user_id}", response_model=UserOut)
+async def update_user(user_id: str, body: UpdateUser) -> UserOut:
+    """Change the user's settings (for now: the voice Echo speaks with)."""
+    db = get_db()
+    user = await require_user(db, user_id)
+    await db.users.update_one({"_id": user["_id"]}, {"$set": {"voice": body.voice}})
+    return user_out({**user, "voice": body.voice})
 
 
 # The progress ring fills toward the next milestone, then starts on the next one.

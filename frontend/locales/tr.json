@@ -113,7 +113,27 @@
     "deleteCancel": "Verilerimi sakla",
     "deleting": "Siliniyor…",
     "deleted": "Tüm verilerin silindi.",
-    "deleteError": "Silinemedi. Lütfen tekrar dene."
+    "deleteError": "Silinemedi. Lütfen tekrar dene.",
+    "voice": "Echo'nun sesi",
+    "voiceHelp": "Echo'nun cümlelerini söylediği ses. Dinlemek için bir sese dokun.",
+    "voiceSample": "Merhaba! Senin yerine konuşurken sesim böyle olacak.",
+    "voiceKinds": {
+      "woman": "Kadın",
+      "man": "Erkek",
+      "girl": "Kız çocuk",
+      "boy": "Erkek çocuk"
+    },
+    "voiceStyles": {
+      "bright": "Canlı ve sıcak",
+      "calm": "Yumuşak ve sakin",
+      "friendly": "Samimi ve neşeli",
+      "relaxed": "Rahat ve sakin",
+      "cheerful": "Neşeli"
+    },
+    "voiceChildrenMissing": "Kız ve erkek çocuk sesleri, Echo sunucusunda kurulunca burada görünür.",
+    "voiceUnavailable": "Bu sunucuda doğal sesler yok, bu yüzden Echo bu cihazın kendi sesini kullanıyor.",
+    "voiceLoadError": "Sesler yüklenemedi.",
+    "voiceSaveError": "Ses kaydedilemedi. Lütfen tekrar dene."
   },
   "prompts": {
     "sayAgain": "Lütfen tekrar söyle.",

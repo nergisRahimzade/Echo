@@ -1,9 +1,10 @@
 "use client";
 
 import Flag from "@/components/Flag";
+import VoicePicker from "@/components/VoicePicker";
 import { UI_LANGUAGES, useI18n } from "@/lib/i18n";
 
-/** Settings: the app language (more settings arrive with privacy controls). */
+/** Settings: the app language and Echo's voice (privacy controls arrive in task 6.4). */
 export default function SettingsPanel() {
   const { t, lang, setLang } = useI18n();
 
@@ -35,6 +36,8 @@ export default function SettingsPanel() {
           ))}
         </div>
       </section>
+
+      <VoicePicker />
     </div>
   );
 }

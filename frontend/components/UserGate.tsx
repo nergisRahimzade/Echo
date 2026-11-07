@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { ApiError, getUser } from "@/lib/api";
 import { clearUser, loadUser, saveUser, type SavedUser } from "@/lib/user";
 import { useT } from "@/lib/i18n";
+import { setVoice } from "@/lib/voice";
 
 const UserContext = createContext<SavedUser | null>(null);
 
@@ -35,10 +36,17 @@ export default function UserGate({ children }: { children: React.ReactNode }) {
     // Show the screen immediately, then confirm with the server in the background.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount
     setUser(saved);
+    setVoice(saved.voice);
     getUser(saved.user_id)
       .then((fresh) => {
-        const updated = { user_id: fresh.user_id, name: fresh.name, main_language: fresh.main_language };
+        const updated = {
+          user_id: fresh.user_id,
+          name: fresh.name,
+          main_language: fresh.main_language,
+          voice: fresh.voice,
+        };
         saveUser(updated);
+        setVoice(updated.voice);
         setUser(updated);
       })
       .catch((err) => {
