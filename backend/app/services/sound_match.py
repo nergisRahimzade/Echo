@@ -96,3 +96,25 @@ async def match_sound(wav: Path, user_id: str, db, top_k: int = 3, query: Voicep
         query = await run_in_threadpool(compute_from_wav, wav)
     refs = await load_references(db, user_id)
     return await run_in_threadpool(rank, query, refs, top_k)
+
+
+async def load_wrong_guesses(db, user_id: str) -> list[dict]:
+    """Recordings whose first guess was wrong, with that wrong guess as the "text"."""
+    refs = []
+    query = {
+        "user_id": user_id,
+        "audio_vector": {"$exists": True},
+        "$or": [{"status": "rejected"}, {"was_corrected": True}],
+    }
+    async for d in db.utterances.find(query, {"sentence": 1, "final_text": 1, "audio_vector": 1, "audio_frames": 1}):
+        wrong = d.get("sentence")
+        if wrong and wrong != d.get("final_text"):
+            refs.append({"id": str(d["_id"]), "text": wrong, "vector": d["audio_vector"], "frames": d["audio_frames"], "source": "rejected", "weight": 1.0})
+    return refs
+
+
+async def not_this(query: Voiceprint, user_id: str, db, min_score: float = 0.6, limit: int = 3) -> list[str]:
+    """Wrong guesses Echo made before for recordings that sound like this one."""
+    refs = await load_wrong_guesses(db, user_id)
+    matches = await run_in_threadpool(rank, query, refs, limit)
+    return [m.text for m in matches if m.score >= min_score]

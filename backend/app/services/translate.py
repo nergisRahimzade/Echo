@@ -20,7 +20,7 @@ from app.services import storage
 from app.services.learning import approve_unanswered_spoken
 from app.services.asr import ASRError, Transcript, build_prompt, get_candidates
 from app.services.scoring import combined_score
-from app.services.sound_match import SoundMatch, match_sound
+from app.services.sound_match import SoundMatch, match_sound, not_this
 from app.services.voiceprint import Voiceprint, fingerprint_upload
 
 logger = logging.getLogger("echo.translate")
@@ -112,7 +112,13 @@ async def translate(db, user: dict, session_id: str, audio_path: str) -> dict:
             return []
 
     query = Voiceprint(vector=fp["audio_vector"], frames=fp["audio_frames"])
-    candidates, matches = await asyncio.gather(candidates_task(), match_sound(None, user_id, db, query=query))
+    candidates, matches, wrong_before = await asyncio.gather(
+        candidates_task(),
+        match_sound(None, user_id, db, query=query),
+        not_this(query, user_id, db),
+    )
+    # "Not this": guesses rejected in this conversation + wrong guesses for similar-sounding recordings.
+    rejected = list(dict.fromkeys([*rejected, *wrong_before]))[:5]
     timer.mark("whisper+sound")
 
     cand_texts = [c.text for c in candidates]
