@@ -85,8 +85,18 @@ async def ping() -> str:
         return "disconnected"
 
 
+class DatabaseUnavailable(RuntimeError):
+    """The server is running without a database; API routes turn this into HTTP 503."""
+
+
 def get_db() -> AsyncDatabase:
-    """The Echo database. Raises if the server started without one."""
+    """The Echo database. Raises DatabaseUnavailable if the server started without one."""
     if _db is None:
-        raise RuntimeError("Database is not connected. Check MONGODB_URI.")
+        raise DatabaseUnavailable("Database is not connected. Check MONGODB_URI.")
     return _db
+
+
+def set_db(database: AsyncDatabase | None) -> None:
+    """Swap in a database directly (used by tests with an in-memory fake)."""
+    global _db
+    _db = database

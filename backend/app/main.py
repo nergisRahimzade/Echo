@@ -3,12 +3,13 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app import db
 from app.config import get_settings
-from app.routes import phrases
+from app.routes import phrases, users
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -35,7 +36,13 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(db.DatabaseUnavailable)
+async def database_unavailable(_: Request, exc: db.DatabaseUnavailable) -> JSONResponse:
+    return JSONResponse(status_code=503, content={"detail": str(exc)})
+
+
 app.include_router(phrases.router)
+app.include_router(users.router)
 
 
 @app.get("/health")

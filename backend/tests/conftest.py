@@ -24,3 +24,26 @@ def fake_env(monkeypatch):
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()
+
+
+@pytest.fixture
+def fake_db():
+    """An in-memory MongoDB (mongomock) plugged into app.db for the duration of a test."""
+    from mongomock_motor import AsyncMongoMockClient
+
+    from app import db
+
+    database = AsyncMongoMockClient(tz_aware=True)["echo_test"]
+    db.set_db(database)
+    yield database
+    db.set_db(None)
+
+
+@pytest.fixture
+def client(fake_db):
+    """API client backed by the in-memory database (startup is skipped, so no real DB)."""
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    return TestClient(app)

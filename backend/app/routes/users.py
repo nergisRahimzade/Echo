@@ -1,0 +1,78 @@
+from datetime import UTC, datetime
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field, field_validator
+
+from app.db import get_db
+from app.ids import require_user
+from app.services.phrases import supported_languages
+
+router = APIRouter(tags=["users"])
+
+DEFAULT_THRESHOLD = 0.80
+# "both" = the user switches between languages; the recognizer auto-detects each utterance.
+MIXED_LANGUAGE = "both"
+
+
+class CreateUser(BaseModel):
+    name: str = Field(min_length=1, max_length=60)
+    main_language: str
+    consent: bool
+
+    @field_validator("name")
+    @classmethod
+    def strip_name(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("name must not be blank")
+        return v
+
+    @field_validator("main_language")
+    @classmethod
+    def known_language(cls, v: str) -> str:
+        v = v.strip().lower()
+        allowed = [*supported_languages(), MIXED_LANGUAGE]
+        if v not in allowed:
+            raise ValueError(f"main_language must be one of: {', '.join(allowed)}")
+        return v
+
+
+class UserOut(BaseModel):
+    user_id: str
+    name: str
+    main_language: str
+    threshold: float
+    created_at: datetime
+
+
+@router.post("/users", status_code=201)
+async def create_user(body: CreateUser) -> dict:
+    """Sign up: save the user's name, main language and consent. Returns the new user_id."""
+    if not body.consent:
+        raise HTTPException(
+            status_code=400,
+            detail="Consent is required: Echo stores voice recordings to learn how the user speaks.",
+        )
+    doc = {
+        "name": body.name,
+        "main_language": body.main_language,
+        "threshold": DEFAULT_THRESHOLD,
+        "consent": True,
+        "consent_at": datetime.now(UTC),
+        "created_at": datetime.now(UTC),
+    }
+    result = await get_db().users.insert_one(doc)
+    return {"user_id": str(result.inserted_id)}
+
+
+@router.get("/users/{user_id}", response_model=UserOut)
+async def get_user(user_id: str) -> UserOut:
+    """Used by the app on start-up to check the saved user still exists."""
+    user = await require_user(get_db(), user_id)
+    return UserOut(
+        user_id=str(user["_id"]),
+        name=user["name"],
+        main_language=user["main_language"],
+        threshold=user["threshold"],
+        created_at=user["created_at"],
+    )

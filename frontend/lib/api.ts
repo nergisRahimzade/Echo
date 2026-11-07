@@ -100,8 +100,25 @@ export function getHealth(): Promise<Health> {
   return request<Health>("/health");
 }
 
-export function createUser(name: string, mainLanguage: Language): Promise<{ user_id: string }> {
-  return postJson("/users", { name, main_language: mainLanguage, consent: true });
+export interface User {
+  user_id: string;
+  name: string;
+  main_language: Language | "both";
+  threshold: number;
+  created_at: string;
+}
+
+/** Sign up. `mainLanguage` "both" = the user mixes Turkish and English. */
+export function createUser(
+  name: string,
+  mainLanguage: Language | "both",
+  consent: boolean,
+): Promise<{ user_id: string }> {
+  return postJson("/users", { name, main_language: mainLanguage, consent });
+}
+
+export function getUser(userId: string): Promise<User> {
+  return request<User>(`/users/${encodeURIComponent(userId)}`);
 }
 
 export function getPhrases(lang: Language): Promise<Phrase[]> {

@@ -1,3 +1,4 @@
 -r requirements.txt
 pytest>=8.3
 httpx>=0.28
+mongomock-motor>=0.0.36
