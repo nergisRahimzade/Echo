@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     uploads_dir: Path = REPO_DIR / "uploads"  # audio files: uploads/{user_id}/{sample_id}.webm
     max_upload_mb: float = 10.0
     whisper_model: str | None = None  # default: whisper-large-v3 on Groq, whisper-1 on OpenAI
+    # Sound matching: DTW cost at which similarity reaches 0 (measured: same phrase ~0.04,
+    # different phrase ~0.47), and extra weight for sentences a helper corrected.
+    sound_match_scale: float = 0.5
+    corrected_match_weight: float = 1.15
 
     @field_validator(*REQUIRED_KEYS, *OPTIONAL_KEYS, mode="before")
     @classmethod
