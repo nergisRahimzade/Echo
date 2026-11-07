@@ -1,20 +1,26 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, MessageSquarePlus, RotateCcw } from "lucide-react";
+import { AlertTriangle, MessageSquarePlus, Repeat, RotateCcw } from "lucide-react";
+import CountdownThumbDown from "@/components/CountdownThumbDown";
 import HealthBadge from "@/components/HealthBadge";
 import HelperTurnInput from "@/components/HelperTurnInput";
 import HoldToRecord from "@/components/HoldToRecord";
 import ThinkingAnimation from "@/components/ThinkingAnimation";
 import { useUser } from "@/components/UserGate";
-import { ApiError, translate, type TranslateResult } from "@/lib/api";
+import { ApiError, sendFeedback, translate, type TranslateResult } from "@/lib/api";
 import { currentSessionId, startNewSession } from "@/lib/session";
 import type { Recording } from "@/lib/useRecorder";
+import { sayAloud } from "@/lib/voice";
+
+/** How long the thumbs-down stays after Echo speaks on its own. */
+const UNDO_SECONDS = 5;
 
 type Stage =
   | { kind: "idle" }
   | { kind: "thinking" }
-  | { kind: "result"; result: TranslateResult }
+  | { kind: "spoken"; result: TranslateResult; undo: boolean } // said aloud; undo = thumbs-down still offered
+  | { kind: "repeat"; result: TranslateResult } // wrong guess: say it again
   | { kind: "error"; message: string };
 
 /**
@@ -29,39 +35,83 @@ export default function TalkScreen() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is only readable after mount
   useEffect(() => setSessionId(currentSessionId()), []);
 
+  const showError = (err: unknown) =>
+    setStage({ kind: "error", message: err instanceof ApiError ? err.message : "Something went wrong." });
+
+  const speakToListener = useCallback((result: TranslateResult) => {
+    setStage({ kind: "spoken", result, undo: true });
+    void sayAloud(result.sentence, result.language);
+  }, []);
+
   const onRecorded = useCallback(
     async (rec: Recording) => {
       setStage({ kind: "thinking" });
       try {
         const result = await translate({ userId: user.user_id, sessionId, audio: rec.blob });
-        setStage({ kind: "result", result });
+        if (result.action === "speak") speakToListener(result);
+        else setStage({ kind: "repeat", result }); // the private check flow arrives in task 4.3
       } catch (err) {
-        setStage({ kind: "error", message: err instanceof ApiError ? err.message : "Something went wrong." });
+        showError(err);
       }
     },
-    [user.user_id, sessionId],
+    [user.user_id, sessionId, speakToListener],
   );
+
+  // ----- after Echo spoke on its own -----
+  async function flagSpokenAsWrong(result: TranslateResult) {
+    try {
+      await sendFeedback({ utteranceId: result.utterance_id, verdict: "down" });
+      setStage({ kind: "repeat", result });
+    } catch (err) {
+      showError(err);
+    }
+  }
+
+  async function confirmSpoken(result: TranslateResult) {
+    setStage({ kind: "spoken", result, undo: false });
+    try {
+      await sendFeedback({ utteranceId: result.utterance_id, verdict: "up", auto: true });
+    } catch {
+      /* the sentence was already said; a missed confirmation only costs one learning example */
+    }
+  }
 
   const newConversation = () => {
     setSessionId(startNewSession());
     setStage({ kind: "idle" });
   };
 
+  const showRecorder = stage.kind === "idle" || stage.kind === "error" || stage.kind === "repeat" || (stage.kind === "spoken" && !stage.undo);
+
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
-      {/* Listener area */}
-      <section className="flex min-h-48 flex-1 flex-col items-center justify-center" aria-live="polite">
+      {/* Listener area: large text, only ever shows sentences that were said aloud */}
+      <section className="flex min-h-48 flex-1 flex-col items-center justify-center gap-6" aria-live="polite">
         {stage.kind === "thinking" && <ThinkingAnimation />}
-        {stage.kind === "result" && (
-          <p
-            className="text-center text-4xl font-bold leading-tight sm:text-5xl"
-            lang={stage.result.language}
-            data-testid="listener-sentence"
-            data-action={stage.result.action}
-          >
-            {stage.result.sentence}
-          </p>
+
+        {stage.kind === "spoken" && (
+          <>
+            <p className="text-center text-4xl font-bold leading-tight sm:text-5xl" lang={stage.result.language} data-testid="listener-sentence">
+              {stage.result.sentence}
+            </p>
+            {stage.undo && (
+              <CountdownThumbDown
+                seconds={UNDO_SECONDS}
+                onDown={() => flagSpokenAsWrong(stage.result)}
+                onExpire={() => confirmSpoken(stage.result)}
+              />
+            )}
+          </>
         )}
+
+        {stage.kind === "repeat" && (
+          <div className="flex flex-col items-center gap-3" data-testid="repeat-prompt">
+            <span className="flex h-28 w-28 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Repeat aria-label="Say it again" className="h-14 w-14" />
+            </span>
+          </div>
+        )}
+
         {stage.kind === "error" && (
           <div role="alert" className="flex flex-col items-center gap-3 text-center">
             <AlertTriangle aria-hidden className="h-16 w-16 text-danger" />
@@ -78,9 +128,9 @@ export default function TalkScreen() {
         )}
       </section>
 
-      {/* User area: the big button (hidden while thinking so it can't be pressed twice) */}
+      {/* User area: the big button */}
       <section className="flex flex-col items-center gap-4">
-        {stage.kind !== "thinking" && <HoldToRecord onRecorded={onRecorded} disabled={!sessionId} />}
+        {showRecorder && <HoldToRecord onRecorded={onRecorded} disabled={!sessionId} />}
       </section>
 
       <div className="flex items-center justify-center gap-3">

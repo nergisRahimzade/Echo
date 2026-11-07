@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from app import db
 from app.config import get_settings
 from app.services.asr import close_shared_client
-from app.routes import enroll, phrases, translate, turns, users, words
+from app.routes import enroll, feedback, phrases, translate, turns, users, words
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -54,6 +54,7 @@ app.include_router(enroll.router)
 app.include_router(words.router)
 app.include_router(translate.router)
 app.include_router(turns.router)
+app.include_router(feedback.router)
 
 
 @app.get("/health")

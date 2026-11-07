@@ -57,7 +57,7 @@ def test_known_phrase_is_spoken(client, user_id, fake_db, fake_ai):
     assert fake_ai["seen"]["whisper_language"] == "tr" and "Zeynep" in fake_ai["seen"]["prompt"]
 
     doc = asyncio.run(fake_db.utterances.find_one({"_id": ObjectId(body["utterance_id"])}))
-    assert doc["status"] == "pending" and doc["attempt"] == 1 and doc["action"] == "speak"
+    assert doc["status"] == "spoken" and doc["attempt"] == 1 and doc["action"] == "speak"
     assert doc["audio_vector"] and doc["wav_path"].endswith(".wav")
     assert "total" in doc["timings"]
 

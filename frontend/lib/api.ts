@@ -203,11 +203,14 @@ export function sendFeedback(params: {
   utteranceId: string;
   verdict: Verdict;
   finalText?: string;
+  /** true when a spoken sentence simply got no thumbs-down within 5 seconds */
+  auto?: boolean;
 }): Promise<FeedbackResult> {
   return postJson("/feedback", {
     utterance_id: params.utteranceId,
     verdict: params.verdict,
     final_text: params.finalText,
+    auto: params.auto ?? false,
   });
 }
 

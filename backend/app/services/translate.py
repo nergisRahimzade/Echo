@@ -156,7 +156,8 @@ async def translate(db, user: dict, session_id: str, audio_path: str) -> dict:
         "score": score.as_dict(),
         "threshold": threshold,
         "action": action,
-        "status": "pending",
+        # Spoken sentences are part of the conversation right away; checks wait for a thumbs up.
+        "status": "spoken" if action == "speak" else "pending",
         "attempt": attempt,
         "created_at": now,
     }
