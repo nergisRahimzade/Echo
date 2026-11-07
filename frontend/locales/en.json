@@ -14,7 +14,8 @@
     "talk": "Talk",
     "enroll": "Teach Echo your voice",
     "words": "Names and places",
-    "settings": "Settings"
+    "settings": "Settings",
+    "main": "Main"
   },
   "health": {
     "checking": "Checking server",
@@ -58,7 +59,8 @@
     "saveNext": "Save and go to the next phrase",
     "addWords": "Add names and places",
     "recordAllAgain": "Record the phrases again",
-    "progress": "{done} of {total} phrases recorded"
+    "progress": "{done} of {total} phrases recorded",
+    "heading": "Echo: teach Echo your voice"
   },
   "words": {
     "title": "Names and places",
@@ -97,7 +99,8 @@
     "showListener": "Show to listener",
     "listenerDialog": "Sentence for the listener. Tap to close.",
     "flip": "Turn upside down for someone sitting opposite",
-    "learned": "{n} sentences learned"
+    "learned": "{n} sentences learned",
+    "heading": "Echo: talk"
   },
   "settings": {
     "title": "Settings",

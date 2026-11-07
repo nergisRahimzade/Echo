@@ -180,6 +180,7 @@ export default function EnrollFlow() {
   if (stage === "finished") {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10" data-testid="enroll-finished">
+        <h1 className="sr-only">{t("enroll.heading")}</h1>
         {languageSwitch}
         <CheckCircle2 aria-hidden className="h-32 w-32 text-success" strokeWidth={2} />
         <ProgressRing done={doneCount} total={total} size={96} label={t("enroll.progress", { done: doneCount, total })} />
@@ -195,6 +196,7 @@ export default function EnrollFlow() {
   if (stage === "start") {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
+        <h1 className="sr-only">{t("enroll.heading")}</h1>
         {languageSwitch}
         <ProgressRing done={doneCount} total={total} size={96} label={t("enroll.progress", { done: doneCount, total })} />
         <div className="flex items-center gap-3 text-muted" aria-hidden>
@@ -217,6 +219,7 @@ export default function EnrollFlow() {
   // stage === "phrase"
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center gap-6 px-4 py-6">
+      <h1 className="sr-only">{t("enroll.heading")}</h1>
       <div className="flex w-full items-center justify-between gap-4">
         <ProgressRing done={doneCount} total={total} label={t("enroll.progress", { done: doneCount, total })} />
         {languageSwitch}

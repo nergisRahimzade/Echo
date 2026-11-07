@@ -15,7 +15,7 @@ const ITEMS = [
 export default function MainNav({ current }: { current?: string }) {
   const t = useT();
   return (
-    <nav className="flex gap-2" aria-label="Main">
+    <nav className="flex gap-1.5 sm:gap-2" aria-label={t("nav.main")}>
       {ITEMS.map(({ href, label, Icon }) => (
         <Link
           key={href}
@@ -23,11 +23,11 @@ export default function MainNav({ current }: { current?: string }) {
           aria-label={t(label)}
           title={t(label)}
           aria-current={current === href ? "page" : undefined}
-          className={`flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl border-2 transition active:scale-95 ${
+          className={`flex h-16 w-16 items-center justify-center rounded-2xl border-2 transition active:scale-95 ${
             current === href ? "border-primary bg-primary/10 text-primary" : "border-border"
           }`}
         >
-          <Icon aria-hidden className="h-7 w-7 sm:h-8 sm:w-8" />
+          <Icon aria-hidden className="h-8 w-8" />
         </Link>
       ))}
     </nav>

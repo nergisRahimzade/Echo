@@ -14,7 +14,8 @@
     "talk": "Konuş",
     "enroll": "Echo'ya sesini öğret",
     "words": "İsimler ve yerler",
-    "settings": "Ayarlar"
+    "settings": "Ayarlar",
+    "main": "Ana menü"
   },
   "health": {
     "checking": "Sunucu kontrol ediliyor",
@@ -58,7 +59,8 @@
     "saveNext": "Kaydet ve sonraki cümleye geç",
     "addWords": "İsim ve yer ekle",
     "recordAllAgain": "Cümleleri tekrar kaydet",
-    "progress": "{total} cümleden {done} tanesi kaydedildi"
+    "progress": "{total} cümleden {done} tanesi kaydedildi",
+    "heading": "Echo: Echo'ya sesini öğret"
   },
   "words": {
     "title": "İsimler ve yerler",
@@ -97,7 +99,8 @@
     "showListener": "Karşındakine göster",
     "listenerDialog": "Karşındaki kişi için cümle. Kapatmak için dokun.",
     "flip": "Karşıda oturan biri için ters çevir",
-    "learned": "{n} cümle öğrenildi"
+    "learned": "{n} cümle öğrenildi",
+    "heading": "Echo: konuş"
   },
   "settings": {
     "title": "Ayarlar",

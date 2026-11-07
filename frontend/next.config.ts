@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // A separate build folder (e.g. NEXT_DIST_DIR=.next-prod) lets a production build run
+  // next to `npm run dev` without the two overwriting each other.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

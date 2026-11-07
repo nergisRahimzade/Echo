@@ -140,6 +140,8 @@ export default function TalkScreen() {
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
+      {/* The screen is icon-only on purpose; screen readers still get a page heading. */}
+      <h1 className="sr-only">{t("talk.heading")}</h1>
       {/* Listener area: large text, only ever shows sentences that were said aloud */}
       <section className="flex min-h-48 flex-1 flex-col items-center justify-center gap-6" aria-live="polite">
         {stage.kind === "thinking" && <ThinkingAnimation />}
@@ -197,7 +199,8 @@ export default function TalkScreen() {
 
       {/* User area: the big button */}
       <section className="flex flex-col items-center gap-4">
-        {showRecorder && <HoldToRecord onRecorded={onRecorded} disabled={!sessionId} />}
+        {/* Shown only once the conversation id exists, so it never flashes in a faded, disabled state. */}
+        {showRecorder && sessionId && <HoldToRecord onRecorded={onRecorded} />}
       </section>
 
       <div className="flex flex-wrap items-center justify-center gap-3">
