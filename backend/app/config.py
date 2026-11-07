@@ -60,6 +60,9 @@ class Settings(BaseSettings):
     sound_match_scale: float = 0.5
     corrected_match_weight: float = 1.15
     # Text embeddings (Voyage AI, multilingual) for Atlas Vector Search.
+    # The agent brain (the brief specifies Claude Sonnet). Low effort keeps it fast.
+    agent_model: str = "claude-sonnet-5-5"
+    agent_effort: str = "low"
     embedding_model: str = "voyage-3.5"
     embedding_dims: int = 1024
 
