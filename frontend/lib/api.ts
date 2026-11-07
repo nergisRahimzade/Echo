@@ -156,6 +156,11 @@ export function updateUser(userId: string, changes: { voice: string }): Promise<
   });
 }
 
+/** The ready-trained demo account (404 when none was loaded with scripts/seed_demo.py). */
+export function getDemoUser(): Promise<User> {
+  return request<User>("/demo");
+}
+
 export function getVoices(): Promise<VoiceList> {
   return request<VoiceList>("/voices");
 }

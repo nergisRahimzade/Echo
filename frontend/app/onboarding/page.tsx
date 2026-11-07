@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { ArrowRight, Check, Loader2, PlayCircle } from "lucide-react";
 import Flag, { type FlagCode } from "@/components/Flag";
 import Header from "@/components/Header";
 import SpeakButton from "@/components/SpeakButton";
-import { ApiError, createUser } from "@/lib/api";
+import { ApiError, createUser, getDemoUser } from "@/lib/api";
 import { saveUser, speakingLanguage, type MainLanguage } from "@/lib/user";
 import { translate, useI18n } from "@/lib/i18n";
 
@@ -24,6 +25,14 @@ export default function OnboardingPage() {
   const [consent, setConsent] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasDemo, setHasDemo] = useState(false);
+
+  // Offer the ready-trained demo account when the server has one (for judges and visitors).
+  useEffect(() => {
+    getDemoUser()
+      .then(() => setHasDemo(true))
+      .catch(() => setHasDemo(false));
+  }, []);
 
   const speakLang = speakingLanguage({ main_language: language });
   // Picking a language switches the whole screen to it right away.
@@ -145,6 +154,17 @@ export default function OnboardingPage() {
             )}
           </button>
         </form>
+
+        {hasDemo && (
+          <Link
+            href="/demo"
+            data-testid="try-demo"
+            className="flex min-h-16 items-center justify-center gap-3 rounded-2xl border-4 border-border bg-surface px-5 text-lg font-semibold transition active:scale-95"
+          >
+            <PlayCircle aria-hidden className="h-7 w-7 text-primary" />
+            {t("demo.try")}
+          </Link>
+        )}
       </main>
     </div>
   );

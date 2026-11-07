@@ -56,6 +56,18 @@ python -m scripts.eval_asr tests/audio --enroll-dir tests/audio --limit 10
 (best guess, word error rate, whether sound matching found the right sentence, time per file).
 Point it at real recordings by putting audio files and a `labels.json` (`{"file.webm": {"text": "...", "language": "tr"}}`) in a folder.
 
+## Demo account
+
+```bash
+cd backend
+python -m scripts.seed_demo                      # recordings generated with an ElevenLabs voice
+python -m scripts.seed_demo --audio-dir my_recs  # or real recordings named {lang}-{phrase_id}.wav
+```
+
+Loads "Deniz" (Turkish + English) with recordings for every phrase, names and places, 31 approved
+sentences (5 corrected by a helper) and a style profile. Running it again replaces the old demo account.
+Open `/demo`, or tap "Try the demo account" on the welcome screen.
+
 ## Deploy on Render
 
 `render.yaml` describes both services (Render > New > Blueprint). If you create them by hand instead:

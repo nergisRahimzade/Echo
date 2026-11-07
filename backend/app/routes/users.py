@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.config import get_settings
 from app.db import get_db
 from app.ids import require_user
-from app.services import storage, tts, voices
+from app.services import privacy, voices
 from app.services.phrases import supported_languages
 
 router = APIRouter(tags=["users"])
@@ -105,23 +105,22 @@ async def get_user(user_id: str) -> UserOut:
     return user_out(await require_user(get_db(), user_id))
 
 
-USER_COLLECTIONS = ("enrollment_samples", "personal_words", "utterances", "style_profiles")
-
-
 @router.delete("/users/{user_id}/data")
 async def delete_user_data(user_id: str) -> dict:
     """Delete everything Echo stores about this user: every document, every recording, and the
     cached spoken audio of their sentences. Cannot be undone."""
     db = get_db()
     user = await require_user(db, user_id)
-    texts: set[str] = set()
-    async for u in db.utterances.find({"user_id": user_id}, {"sentence": 1, "final_text": 1}):
-        texts.update(t for t in (u.get("sentence"), u.get("final_text")) if t)
-    deleted = {name: (await db[name].delete_many({"user_id": user_id})).deleted_count for name in USER_COLLECTIONS}
-    await db.users.delete_one({"_id": user["_id"]})
-    await storage.delete_user_folder(user_id)
-    cached = await tts.forget(texts)
-    return {"ok": True, "deleted": deleted, "cached_audio_removed": cached}
+    return {"ok": True, **await privacy.delete_everything(db, user)}
+
+
+@router.get("/demo", response_model=UserOut)
+async def demo_user() -> UserOut:
+    """The ready-trained demo account (loaded with scripts/seed_demo.py). 404 when there is none."""
+    user = await get_db().users.find_one({"demo": True}, sort=[("created_at", -1)])
+    if user is None:
+        raise HTTPException(status_code=404, detail="No demo account. Run: python -m scripts.seed_demo")
+    return user_out(user)
 
 
 @router.patch("/users/{user_id}", response_model=UserOut)

@@ -139,5 +139,11 @@
   "prompts": {
     "sayAgain": "Please say it again.",
     "helper": "A helper can type it."
+  },
+  "demo": {
+    "try": "Try the demo account",
+    "loading": "Opening the demo account",
+    "missing": "There is no demo account on this server yet.",
+    "signUp": "Sign up instead"
   }
 }

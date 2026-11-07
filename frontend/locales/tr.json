@@ -139,5 +139,11 @@
   "prompts": {
     "sayAgain": "Lütfen tekrar söyle.",
     "helper": "Bir yardımcı yazabilir."
+  },
+  "demo": {
+    "try": "Demo hesabını dene",
+    "loading": "Demo hesabı açılıyor",
+    "missing": "Bu sunucuda henüz demo hesabı yok.",
+    "signUp": "Bunun yerine kaydol"
   }
 }

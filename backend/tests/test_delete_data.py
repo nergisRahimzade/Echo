@@ -4,7 +4,7 @@ import asyncio
 
 from bson import ObjectId
 
-from app.routes.users import USER_COLLECTIONS
+from app.services.privacy import USER_COLLECTIONS
 from app.services import tts, voices
 
 
