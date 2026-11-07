@@ -60,6 +60,12 @@ class Settings(BaseSettings):
     sound_match_scale: float = 0.5
     corrected_match_weight: float = 1.15
     # Text embeddings (Voyage AI, multilingual) for Atlas Vector Search.
+    # Combined score weights (brief: 0.5 / 0.25 / 0.25; tune with real data) and the default
+    # speak-aloud threshold for new users.
+    score_weight_agent: float = 0.5
+    score_weight_agreement: float = 0.25
+    score_weight_sound: float = 0.25
+    default_threshold: float = 0.80
     # The agent brain (the brief specifies Claude Sonnet). Low effort keeps it fast.
     agent_model: str = "claude-sonnet-5-5"
     agent_effort: str = "low"

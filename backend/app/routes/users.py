@@ -3,13 +3,13 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, field_validator
 
+from app.config import get_settings
 from app.db import get_db
 from app.ids import require_user
 from app.services.phrases import supported_languages
 
 router = APIRouter(tags=["users"])
 
-DEFAULT_THRESHOLD = 0.80
 # "both" = the user switches between languages; the recognizer auto-detects each utterance.
 MIXED_LANGUAGE = "both"
 
@@ -56,7 +56,7 @@ async def create_user(body: CreateUser) -> dict:
     doc = {
         "name": body.name,
         "main_language": body.main_language,
-        "threshold": DEFAULT_THRESHOLD,
+        "threshold": get_settings().default_threshold,
         "consent": True,
         "consent_at": datetime.now(UTC),
         "created_at": datetime.now(UTC),
