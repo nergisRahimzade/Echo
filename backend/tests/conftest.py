@@ -16,9 +16,11 @@ FAKE_ENV = {
 
 
 @pytest.fixture(autouse=True)
-def fake_env(monkeypatch):
+def fake_env(monkeypatch, tmp_path):
     for key, value in FAKE_ENV.items():
         monkeypatch.setenv(key, value)
+    # Each test gets its own empty uploads folder, never the real one.
+    monkeypatch.setenv("UPLOADS_DIR", str(tmp_path / "uploads"))
     from app.config import get_settings
 
     get_settings.cache_clear()
@@ -47,3 +49,15 @@ def client(fake_db):
     from app.main import app
 
     return TestClient(app)
+
+
+@pytest.fixture
+def user_id(client):
+    """A freshly signed-up Turkish-speaking user."""
+    res = client.post("/users", json={"name": "Ayşe", "main_language": "tr", "consent": True})
+    return res.json()["user_id"]
+
+
+@pytest.fixture
+def uploads_dir(tmp_path):
+    return tmp_path / "uploads"

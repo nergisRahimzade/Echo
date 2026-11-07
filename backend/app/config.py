@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     mongodb_db: str = "echo"
     frontend_url: str = "http://localhost:3000"  # comma-separated list allowed
     phrases_dir: Path = REPO_DIR / "phrases"  # enrollment phrase lists (tr.json, en.json)
+    uploads_dir: Path = REPO_DIR / "uploads"  # audio files: uploads/{user_id}/{sample_id}.webm
+    max_upload_mb: float = 10.0
 
     @field_validator(*REQUIRED_KEYS, "openai_api_key", "groq_api_key", mode="before")
     @classmethod
