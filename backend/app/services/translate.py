@@ -17,6 +17,7 @@ from app.agent.run import AgentError, AgentResult, interpret
 from app.agent.tools import ToolContext, get_personal_words, get_recent_turns
 from app.config import get_settings
 from app.services import storage
+from app.services.learning import approve_unanswered_spoken
 from app.services.asr import ASRError, Transcript, build_prompt, get_candidates
 from app.services.scoring import combined_score
 from app.services.sound_match import SoundMatch, match_sound
@@ -84,6 +85,9 @@ async def translate(db, user: dict, session_id: str, audio_path: str) -> dict:
     timer = Timer()
     user_id = str(user["_id"])
     main_language = user.get("main_language", "tr")
+
+    # Sentences spoken earlier that never got a thumbs-down are approved (and learned) first.
+    await approve_unanswered_spoken(db, user_id)
 
     ctx = ToolContext(db=db, user_id=user_id, session_id=session_id)
     # Audio clean-up and memory look-ups don't depend on each other: run them together.
