@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from app.db import get_db
 from app.ids import require_user
 from app.services import storage
+from app.services.audio import AudioError
+from app.services.voiceprint import fingerprint_upload
 from app.services.phrases import supported_languages
 
 router = APIRouter(tags=["enrollment"])
@@ -49,6 +51,12 @@ async def enroll(
 
     sample_id = ObjectId()
     audio_path, size = await storage.save_upload(audio, user_id, str(sample_id))
+    try:
+        # 16 kHz WAV + sound fingerprint, used for sound matching later.
+        fingerprint = await fingerprint_upload(audio_path)
+    except AudioError:
+        await storage.delete_file(audio_path)
+        raise HTTPException(status_code=422, detail="Could not read the recording. Please record again.") from None
     doc = {
         "_id": sample_id,
         "user_id": user_id,
@@ -58,12 +66,14 @@ async def enroll(
         "audio_path": audio_path,
         "mime_type": audio.content_type,
         "size_bytes": size,
+        **fingerprint,
         "created_at": datetime.now(UTC),
     }
     try:
         await db.enrollment_samples.insert_one(doc)
     except Exception:
         await storage.delete_file(audio_path)  # don't leave orphan audio behind
+        await storage.delete_file(fingerprint["wav_path"])
         raise
     return {"sample_id": str(sample_id)}
 

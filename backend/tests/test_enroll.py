@@ -3,7 +3,9 @@ import asyncio
 import pytest
 from bson import ObjectId
 
-FAKE_WEBM = b"\x1aE\xdf\xa3" + b"\x00" * 2000  # webm magic bytes + padding
+from tests.audio_utils import speech_like_webm
+
+FAKE_WEBM = speech_like_webm()  # real (synthetic) webm/opus audio, like a browser recording
 
 
 def post_sample(client, user_id, text="Su istiyorum", phrase_id="water", content_type="audio/webm;codecs=opus", data=FAKE_WEBM, **extra):
@@ -21,7 +23,7 @@ def test_three_recordings_saved_to_folder_and_db(client, fake_db, user_id, uploa
         assert res.status_code == 201, res.text
         ids.append(res.json()["sample_id"])
 
-    files = sorted(p.name for p in (uploads_dir / user_id).iterdir())
+    files = sorted(p.name for p in (uploads_dir / user_id).glob("*.webm"))
     assert files == sorted(f"{i}.webm" for i in ids)
 
     docs = asyncio.run(fake_db.enrollment_samples.find({"user_id": user_id}).to_list(None))
@@ -38,6 +40,24 @@ def test_list_samples(client, user_id):
     post_sample(client, user_id, text="Hello", phrase_id="hello", language="en")
     body = client.get(f"/enroll?user_id={user_id}").json()
     assert [(s["text"], s["language"]) for s in body] == [("Merhaba", "tr"), ("Hello", "en")]
+
+
+def test_samples_get_wav_and_voiceprint(client, fake_db, user_id, uploads_dir):
+    from app.services.voiceprint import MAX_FRAMES, N_MFCC, TEMPLATE_FRAMES
+
+    sample_id = post_sample(client, user_id).json()["sample_id"]
+    doc = asyncio.run(fake_db.enrollment_samples.find_one({"_id": ObjectId(sample_id)}))
+    assert doc["wav_path"] == f"{user_id}/{sample_id}.wav"
+    assert (uploads_dir / doc["wav_path"]).exists()
+    assert len(doc["audio_vector"]) == TEMPLATE_FRAMES * N_MFCC
+    assert 5 <= len(doc["audio_frames"]) <= MAX_FRAMES
+    assert len(doc["audio_frames"][0]) == 2 * N_MFCC
+
+
+def test_unreadable_audio_rejected(client, user_id, uploads_dir):
+    res = post_sample(client, user_id, data=bytes([0x1A, 0x45, 0xDF, 0xA3]) + bytes(500))
+    assert res.status_code == 422
+    assert not any((uploads_dir / user_id).iterdir())
 
 
 def test_safari_mp4_keeps_its_extension(client, user_id, uploads_dir):
