@@ -13,6 +13,7 @@ from pydantic import ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+REPO_DIR = BACKEND_DIR.parent
 ENV_FILE = BACKEND_DIR / ".env"
 
 # Keys that must be present (and not blank) for Echo to run.
@@ -40,6 +41,7 @@ class Settings(BaseSettings):
     # --- Normal settings (safe defaults) ---
     mongodb_db: str = "echo"
     frontend_url: str = "http://localhost:3000"  # comma-separated list allowed
+    phrases_dir: Path = REPO_DIR / "phrases"  # enrollment phrase lists (tr.json, en.json)
 
     @field_validator(*REQUIRED_KEYS, "openai_api_key", "groq_api_key", mode="before")
     @classmethod

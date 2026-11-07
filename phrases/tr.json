@@ -1,0 +1,26 @@
+[
+  { "id": "hello", "text": "Merhaba", "category": "greetings", "icon": "👋" },
+  { "id": "good_morning", "text": "Günaydın", "category": "greetings", "icon": "☀️" },
+  { "id": "thank_you", "text": "Çok teşekkür ederim", "category": "greetings", "icon": "🙏" },
+  { "id": "goodbye", "text": "Hoşça kal, yarın görüşürüz", "category": "greetings", "icon": "🌙" },
+
+  { "id": "water", "text": "Su istiyorum", "category": "needs", "icon": "💧" },
+  { "id": "toilet", "text": "Tuvalete gitmem lazım", "category": "needs", "icon": "🚻" },
+  { "id": "hungry", "text": "Acıktım, bir şey yiyebilir miyim?", "category": "needs", "icon": "🍽️" },
+  { "id": "help", "text": "Bana yardım eder misin lütfen?", "category": "needs", "icon": "🤝" },
+
+  { "id": "tired", "text": "Yorgunum", "category": "feelings", "icon": "😴" },
+  { "id": "happy", "text": "Bugün çok mutluyum", "category": "feelings", "icon": "😊" },
+  { "id": "pain", "text": "Burası acıyor", "category": "feelings", "icon": "🤕" },
+  { "id": "unwell", "text": "Kendimi iyi hissetmiyorum, dinlenmek istiyorum", "category": "feelings", "icon": "🤒" },
+
+  { "id": "how_are_you", "text": "Nasılsın?", "category": "questions", "icon": "🙂" },
+  { "id": "what_time", "text": "Saat kaç?", "category": "questions", "icon": "⏰" },
+  { "id": "where_going", "text": "Nereye gidiyoruz?", "category": "questions", "icon": "🗺️" },
+  { "id": "repeat", "text": "Tekrar söyler misin lütfen?", "category": "questions", "icon": "🔁" },
+
+  { "id": "yes", "text": "Evet", "category": "yes_no", "icon": "✅" },
+  { "id": "no", "text": "Hayır", "category": "yes_no", "icon": "❌" },
+  { "id": "dont_know", "text": "Bilmiyorum", "category": "yes_no", "icon": "🤷" },
+  { "id": "maybe_later", "text": "Belki sonra", "category": "yes_no", "icon": "⏳" }
+]

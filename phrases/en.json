@@ -1,0 +1,26 @@
+[
+  { "id": "hello", "text": "Hello", "category": "greetings", "icon": "👋" },
+  { "id": "good_morning", "text": "Good morning", "category": "greetings", "icon": "☀️" },
+  { "id": "thank_you", "text": "Thank you very much", "category": "greetings", "icon": "🙏" },
+  { "id": "goodbye", "text": "Goodbye, see you tomorrow", "category": "greetings", "icon": "🌙" },
+
+  { "id": "water", "text": "I want some water", "category": "needs", "icon": "💧" },
+  { "id": "toilet", "text": "I need to go to the toilet", "category": "needs", "icon": "🚻" },
+  { "id": "hungry", "text": "I am hungry, can I have something to eat?", "category": "needs", "icon": "🍽️" },
+  { "id": "help", "text": "Can you help me, please?", "category": "needs", "icon": "🤝" },
+
+  { "id": "tired", "text": "I am tired", "category": "feelings", "icon": "😴" },
+  { "id": "happy", "text": "I feel really happy today", "category": "feelings", "icon": "😊" },
+  { "id": "pain", "text": "It hurts here", "category": "feelings", "icon": "🤕" },
+  { "id": "unwell", "text": "I don't feel well and I want to rest", "category": "feelings", "icon": "🤒" },
+
+  { "id": "how_are_you", "text": "How are you?", "category": "questions", "icon": "🙂" },
+  { "id": "what_time", "text": "What time is it?", "category": "questions", "icon": "⏰" },
+  { "id": "where_going", "text": "Where are we going?", "category": "questions", "icon": "🗺️" },
+  { "id": "repeat", "text": "Can you say that again, please?", "category": "questions", "icon": "🔁" },
+
+  { "id": "yes", "text": "Yes", "category": "yes_no", "icon": "✅" },
+  { "id": "no", "text": "No", "category": "yes_no", "icon": "❌" },
+  { "id": "dont_know", "text": "I don't know", "category": "yes_no", "icon": "🤷" },
+  { "id": "maybe_later", "text": "Maybe later", "category": "yes_no", "icon": "⏳" }
+]
