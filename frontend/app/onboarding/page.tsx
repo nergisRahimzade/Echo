@@ -117,7 +117,7 @@ export default function OnboardingPage() {
             >
               <span
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-4 ${
-                  consent ? "border-success bg-success text-white" : "border-muted"
+                  consent ? "border-success bg-success text-success-foreground" : "border-muted"
                 }`}
               >
                 {consent && <Check aria-hidden className="h-7 w-7" strokeWidth={3.5} />}

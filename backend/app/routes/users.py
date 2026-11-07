@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.config import get_settings
 from app.db import get_db
 from app.ids import require_user
-from app.services import voices
+from app.services import storage, tts, voices
 from app.services.phrases import supported_languages
 
 router = APIRouter(tags=["users"])
@@ -103,6 +103,25 @@ def user_out(user: dict) -> UserOut:
 async def get_user(user_id: str) -> UserOut:
     """Used by the app on start-up to check the saved user still exists."""
     return user_out(await require_user(get_db(), user_id))
+
+
+USER_COLLECTIONS = ("enrollment_samples", "personal_words", "utterances", "style_profiles")
+
+
+@router.delete("/users/{user_id}/data")
+async def delete_user_data(user_id: str) -> dict:
+    """Delete everything Echo stores about this user: every document, every recording, and the
+    cached spoken audio of their sentences. Cannot be undone."""
+    db = get_db()
+    user = await require_user(db, user_id)
+    texts: set[str] = set()
+    async for u in db.utterances.find({"user_id": user_id}, {"sentence": 1, "final_text": 1}):
+        texts.update(t for t in (u.get("sentence"), u.get("final_text")) if t)
+    deleted = {name: (await db[name].delete_many({"user_id": user_id})).deleted_count for name in USER_COLLECTIONS}
+    await db.users.delete_one({"_id": user["_id"]})
+    await storage.delete_user_folder(user_id)
+    cached = await tts.forget(texts)
+    return {"ok": True, "deleted": deleted, "cached_audio_removed": cached}
 
 
 @router.patch("/users/{user_id}", response_model=UserOut)

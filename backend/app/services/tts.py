@@ -35,6 +35,26 @@ def cache_path(text: str, language: str, elevenlabs_id: str) -> Path:
     return s.uploads_dir / "tts-cache" / f"{hashlib.sha256(key).hexdigest()}.mp3"
 
 
+async def forget(texts: set[str]) -> int:
+    """Delete cached audio of these sentences in every voice and language (privacy: delete my data)."""
+    paths = {
+        cache_path(text, language, v.elevenlabs_id)
+        for text in texts
+        for language in ("tr", "en")
+        for v in voices.available()
+    }
+
+    def remove() -> int:
+        removed = 0
+        for p in paths:
+            if p.exists():
+                p.unlink(missing_ok=True)
+                removed += 1
+        return removed
+
+    return await run_in_threadpool(remove)
+
+
 async def synthesize(
     text: str, language: str, voice: str | None = None, client: httpx.AsyncClient | None = None
 ) -> tuple[bytes, bool]:

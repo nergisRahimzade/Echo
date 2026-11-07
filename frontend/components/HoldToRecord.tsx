@@ -141,7 +141,7 @@ export default function HoldToRecord({
           onKeyUp={onKeyUp}
           onContextMenu={(e) => e.preventDefault()}
           className={`relative flex min-h-[180px] w-full flex-col items-center justify-center gap-3 rounded-3xl px-6 py-8 shadow-lg transition focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-primary disabled:opacity-50 ${
-            isRecording ? "scale-[0.98] bg-danger text-white" : "bg-primary text-primary-foreground"
+            isRecording ? "scale-[0.98] bg-danger text-danger-foreground" : "bg-primary text-primary-foreground"
           } ${tooShort ? "animate-shake" : ""}`}
         >
           <Icon aria-hidden className={`h-16 w-16 ${busy ? "animate-spin" : ""}`} strokeWidth={2.5} />

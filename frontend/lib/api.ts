@@ -279,6 +279,7 @@ export function getProgress(userId: string): Promise<Progress> {
   return request<Progress>(`/users/${encodeURIComponent(userId)}/progress`);
 }
 
+/** Delete everything Echo stores about the user (documents, recordings, cached audio). */
 export function deleteUserData(userId: string): Promise<{ ok: boolean }> {
   return request(`/users/${encodeURIComponent(userId)}/data`, { method: "DELETE" });
 }

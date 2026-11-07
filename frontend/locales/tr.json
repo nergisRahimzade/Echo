@@ -133,7 +133,8 @@
     "voiceChildrenMissing": "Kız ve erkek çocuk sesleri, Echo sunucusunda kurulunca burada görünür.",
     "voiceUnavailable": "Bu sunucuda doğal sesler yok, bu yüzden Echo bu cihazın kendi sesini kullanıyor.",
     "voiceLoadError": "Sesler yüklenemedi.",
-    "voiceSaveError": "Ses kaydedilemedi. Lütfen tekrar dene."
+    "voiceSaveError": "Ses kaydedilemedi. Lütfen tekrar dene.",
+    "startOver": "Yeniden başla"
   },
   "prompts": {
     "sayAgain": "Lütfen tekrar söyle.",

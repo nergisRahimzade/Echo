@@ -133,7 +133,8 @@
     "voiceChildrenMissing": "Girl and boy voices appear here once they are set up on the Echo server.",
     "voiceUnavailable": "Natural voices are not available on this server, so Echo uses this device's own voice.",
     "voiceLoadError": "Could not load the voices.",
-    "voiceSaveError": "Could not save the voice. Please try again."
+    "voiceSaveError": "Could not save the voice. Please try again.",
+    "startOver": "Start again"
   },
   "prompts": {
     "sayAgain": "Please say it again.",

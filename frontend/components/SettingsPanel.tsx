@@ -1,10 +1,11 @@
 "use client";
 
+import DeleteMyData from "@/components/DeleteMyData";
 import Flag from "@/components/Flag";
 import VoicePicker from "@/components/VoicePicker";
 import { UI_LANGUAGES, useI18n } from "@/lib/i18n";
 
-/** Settings: the app language and Echo's voice (privacy controls arrive in task 6.4). */
+/** Settings: the app language and Echo's voice and deleting all of the user's data. */
 export default function SettingsPanel() {
   const { t, lang, setLang } = useI18n();
 
@@ -38,6 +39,8 @@ export default function SettingsPanel() {
       </section>
 
       <VoicePicker />
+
+      <DeleteMyData />
     </div>
   );
 }
