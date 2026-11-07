@@ -66,6 +66,36 @@ async def ensure_schema(db: AsyncDatabase) -> None:
     await db.utterances.create_index(
         [("session_id", ASCENDING), ("created_at", DESCENDING)]
     )
+    await ensure_vector_index(db)
+
+
+async def ensure_vector_index(db: AsyncDatabase, dims: int | None = None) -> None:
+    """Atlas Vector Search index on approved sentences' text embeddings (Atlas only; best effort)."""
+    from pymongo.operations import SearchIndexModel
+
+    from app.config import get_settings
+
+    dims = dims or get_settings().embedding_dims
+    try:
+        existing = [i["name"] async for i in await db.utterances.list_search_indexes()]
+        if "utterance_text_vector" in existing:
+            return
+        await db.utterances.create_search_index(
+            SearchIndexModel(
+                name="utterance_text_vector",
+                type="vectorSearch",
+                definition={
+                    "fields": [
+                        {"type": "vector", "path": "text_vector", "numDimensions": dims, "similarity": "cosine"},
+                        {"type": "filter", "path": "user_id"},
+                        {"type": "filter", "path": "status"},
+                    ]
+                },
+            )
+        )
+        logger.info("Created Atlas Vector Search index 'utterance_text_vector'.")
+    except Exception as exc:  # not Atlas, no permission, or an older server
+        logger.info("Vector search index not created (%s); similar-sentence search uses spelling similarity.", exc)
 
 
 async def close() -> None:

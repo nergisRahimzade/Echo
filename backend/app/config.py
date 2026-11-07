@@ -59,6 +59,9 @@ class Settings(BaseSettings):
     # different phrase ~0.47), and extra weight for sentences a helper corrected.
     sound_match_scale: float = 0.5
     corrected_match_weight: float = 1.15
+    # Text embeddings (Voyage AI, multilingual) for Atlas Vector Search.
+    embedding_model: str = "voyage-3.5"
+    embedding_dims: int = 1024
 
     @field_validator(*REQUIRED_KEYS, *OPTIONAL_KEYS, mode="before")
     @classmethod
