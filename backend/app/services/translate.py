@@ -85,19 +85,20 @@ async def translate(db, user: dict, session_id: str, audio_path: str) -> dict:
     user_id = str(user["_id"])
     main_language = user.get("main_language", "tr")
 
-    fp = await fingerprint_upload(audio_path)  # 16 kHz WAV + voiceprint (raises AudioError)
-    wav = storage.absolute_path(fp["wav_path"])
-    timer.mark("audio")
-
     ctx = ToolContext(db=db, user_id=user_id, session_id=session_id)
-    prompt, words, turns, rejected, attempt = await asyncio.gather(
-        build_prompt(db, user_id),
-        get_personal_words(ctx),
-        get_recent_turns(ctx),
-        recent_rejections(db, user_id, session_id),
-        attempt_number(db, user_id, session_id),
+    # Audio clean-up and memory look-ups don't depend on each other: run them together.
+    fp, (prompt, words, turns, rejected, attempt) = await asyncio.gather(
+        fingerprint_upload(audio_path),  # 16 kHz WAV + voiceprint (raises AudioError)
+        asyncio.gather(
+            build_prompt(db, user_id),
+            get_personal_words(ctx),
+            get_recent_turns(ctx),
+            recent_rejections(db, user_id, session_id),
+            attempt_number(db, user_id, session_id),
+        ),
     )
-    timer.mark("memory")
+    wav = storage.absolute_path(fp["wav_path"])
+    timer.mark("audio+memory")
 
     async def candidates_task() -> list[Transcript]:
         try:

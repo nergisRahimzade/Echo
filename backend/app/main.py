@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 
 from app import db
 from app.config import get_settings
+from app.services.asr import close_shared_client
 from app.routes import enroll, phrases, translate, turns, users, words
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -26,6 +27,7 @@ async def lifespan(_: FastAPI):
         logger.warning("EMBEDDING_API_KEY not set: similar sentences are matched by spelling, not meaning.")
     await db.connect(settings.mongodb_uri, settings.mongodb_db)
     yield
+    await close_shared_client()
     await db.close()
 
 

@@ -43,6 +43,24 @@ class Transcript:
     temperature: float = 0.0
 
 
+_shared: httpx.AsyncClient | None = None
+
+
+def shared_client() -> httpx.AsyncClient:
+    """One long-lived HTTP client: later requests reuse the open connection (no new TLS handshake)."""
+    global _shared
+    if _shared is None or _shared.is_closed:
+        _shared = httpx.AsyncClient(timeout=30, limits=httpx.Limits(max_keepalive_connections=10))
+    return _shared
+
+
+async def close_shared_client() -> None:
+    global _shared
+    if _shared is not None:
+        await _shared.aclose()
+    _shared = None
+
+
 def _provider() -> tuple[str, str, str]:
     """(url, model, api key) for the configured provider. Groq preferred: faster."""
     s = get_settings()
@@ -167,11 +185,11 @@ async def get_candidates(wav: Path, language: str | None, prompt: str | None) ->
     variants: list[tuple[str | None, float, str | None]] = (
         [(prompt, 0.0, None), (None, 0.0, None), (prompt, 0.4, alt)] if prompt else [(None, 0.0, None), (None, 0.4, alt)]
     )
-    async with httpx.AsyncClient(timeout=30) as client:
-        results = await asyncio.gather(
-            *(transcribe(wav, language, p, temp, client=client, model=m) for p, temp, m in variants),
-            return_exceptions=True,
-        )
+    client = shared_client()
+    results = await asyncio.gather(
+        *(transcribe(wav, language, p, temp, client=client, model=m) for p, temp, m in variants),
+        return_exceptions=True,
+    )
     errors = [r for r in results if isinstance(r, Exception)]
     for err in errors:
         logger.warning("One Whisper guess failed: %s", err)
