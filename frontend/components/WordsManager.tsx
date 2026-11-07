@@ -162,7 +162,7 @@ export default function WordsManager() {
                 >
                   <Mic aria-hidden className="h-8 w-8" />
                   {isRecorded && (
-                    <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full bg-success text-white" data-testid="recorded-badge">
+                    <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full bg-success text-success-foreground" data-testid="recorded-badge">
                       <Check aria-hidden className="h-5 w-5" strokeWidth={3} />
                     </span>
                   )}

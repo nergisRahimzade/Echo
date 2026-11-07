@@ -14,7 +14,8 @@ build/
 # Secrets
 .env
 .env.local
-.env.*.local
+.env.*
+!.env.example
 
 # User audio (keep the folder itself)
 uploads/*

@@ -69,7 +69,7 @@ export default function CountdownThumbDown({
           strokeDashoffset={c * (1 - left / seconds)}
         />
       </svg>
-      <span className="flex h-24 w-24 items-center justify-center rounded-full bg-danger text-white">
+      <span className="flex h-24 w-24 items-center justify-center rounded-full bg-danger text-danger-foreground">
         <ThumbsDown aria-hidden className="h-12 w-12" strokeWidth={2.5} />
       </span>
     </button>

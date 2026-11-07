@@ -59,10 +59,15 @@ class Settings(BaseSettings):
     # different phrase ~0.47), and extra weight for sentences a helper corrected.
     sound_match_scale: float = 0.5
     corrected_match_weight: float = 1.15
-    # ElevenLabs voices (multilingual model, so any voice can speak Turkish and English).
-    elevenlabs_model: str = "eleven_flash_v2_5"
-    elevenlabs_voice_tr: str = "JBFqnCBsd6RMkjVDRZzb"
-    elevenlabs_voice_en: str = "JBFqnCBsd6RMkjVDRZzb"
+    # ElevenLabs voices. multilingual_v2 = the most natural, expressive model that stays exact on
+    # short sentences (~0.45 s); every voice can speak Turkish and English. The voice list itself
+    # is in app/services/voices.py. Child voices are your own ElevenLabs voices (Voice Design on
+    # elevenlabs.io; the free plan cannot use library voices through the API), so they are only
+    # offered once their voice ids are set here.
+    elevenlabs_model: str = "eleven_multilingual_v2"
+    default_voice: str = "jessica"
+    elevenlabs_voice_girl: str | None = None
+    elevenlabs_voice_boy: str | None = None
     # Text embeddings (Voyage AI, multilingual) for Atlas Vector Search.
     # Combined score weights (brief: 0.5 / 0.25 / 0.25; tune with real data) and the default
     # speak-aloud threshold for new users.
@@ -92,7 +97,8 @@ class Settings(BaseSettings):
 
     @property
     def frontend_origins(self) -> list[str]:
-        return [o.strip() for o in self.frontend_url.split(",") if o.strip()]
+        # Browsers send the origin without a trailing slash, so "https://x.com/" would never match.
+        return [o.strip().rstrip("/") for o in self.frontend_url.split(",") if o.strip()]
 
 
 class MissingSettingsError(RuntimeError):

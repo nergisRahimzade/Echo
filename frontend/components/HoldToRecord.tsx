@@ -66,6 +66,7 @@ export default function HoldToRecord({
     }
   };
 
+  const modeWord = mode === "hold" ? t("recorder.modeHold") : t("recorder.modeTap");
   const busy = status === "starting";
   const blocked = disabled || status === "denied" || status === "unsupported";
 
@@ -140,7 +141,7 @@ export default function HoldToRecord({
           onKeyUp={onKeyUp}
           onContextMenu={(e) => e.preventDefault()}
           className={`relative flex min-h-[180px] w-full flex-col items-center justify-center gap-3 rounded-3xl px-6 py-8 shadow-lg transition focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-primary disabled:opacity-50 ${
-            isRecording ? "scale-[0.98] bg-danger text-white" : "bg-primary text-primary-foreground"
+            isRecording ? "scale-[0.98] bg-danger text-danger-foreground" : "bg-primary text-primary-foreground"
           } ${tooShort ? "animate-shake" : ""}`}
         >
           <Icon aria-hidden className={`h-16 w-16 ${busy ? "animate-spin" : ""}`} strokeWidth={2.5} />
@@ -174,12 +175,13 @@ export default function HoldToRecord({
           type="button"
           onClick={toggleMode}
           disabled={isRecording}
-          aria-label={mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}
+          // The accessible name starts with the visible word, so voice control ("tap Hold") works.
+          aria-label={`${modeWord}: ${mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}`}
           title={mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}
           className="flex min-h-16 min-w-16 items-center justify-center gap-2 rounded-2xl border-2 border-border bg-surface px-4 text-lg transition active:scale-95 disabled:opacity-40"
         >
           {mode === "hold" ? <Hand aria-hidden className="h-8 w-8" /> : <Pointer aria-hidden className="h-8 w-8" />}
-          <span className="text-muted">{mode === "hold" ? t("recorder.modeHold") : t("recorder.modeTap")}</span>
+          <span className="text-muted">{modeWord}</span>
         </button>
       )}
     </div>

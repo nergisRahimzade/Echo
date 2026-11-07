@@ -60,3 +60,18 @@ def test_no_database_gives_503():
 
     res = TestClient(app).post("/users", json={"name": "A", "main_language": "tr", "consent": True})
     assert res.status_code == 503
+
+
+def test_voice_defaults_then_can_be_changed(client):
+    user_id = make_user(client).json()["user_id"]
+    assert client.get(f"/users/{user_id}").json()["voice"] == "jessica"
+    res = client.patch(f"/users/{user_id}", json={"voice": "will"})
+    assert res.status_code == 200 and res.json()["voice"] == "will"
+    assert client.get(f"/users/{user_id}").json()["voice"] == "will"  # saved
+
+
+def test_voice_must_be_available(client):
+    user_id = make_user(client).json()["user_id"]
+    assert client.patch(f"/users/{user_id}", json={"voice": "robot"}).status_code == 422
+    assert client.patch(f"/users/{user_id}", json={"voice": "girl"}).status_code == 422  # child voice not set up
+    assert client.patch(f"/users/{ObjectId()}", json={"voice": "will"}).status_code == 404

@@ -1,0 +1,45 @@
+# Render Blueprint: Render > New > Blueprint > pick this repo. Creates both services from `main`.
+# Values marked "sync: false" are secrets/URLs you type in the Render dashboard (never commit them).
+# MongoDB Atlas: Render has no fixed IP address, so Atlas > Network Access must allow 0.0.0.0/0.
+# Region: oregon = next to the Atlas cluster (AWS us-west-2), so database calls stay fast.
+services:
+  # The API (Python / FastAPI). It is NOT a Node app: there is no package.json in backend/.
+  - type: web
+    name: echo-api
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m app # listens on 0.0.0.0:$PORT (see backend/app/__main__.py)
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.14"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: FRONTEND_URL # the website's address, e.g. https://echo-web.onrender.com (no trailing path)
+        sync: false
+
+  # The website (Next.js).
+  - type: web
+    name: echo-web
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    startCommand: npm start # next start: listens on 0.0.0.0:$PORT
+    autoDeploy: true
+    envVars:
+      - key: NEXT_PUBLIC_API_URL # the API's address, e.g. https://echo-api.onrender.com (needed at build time)
+        sync: false

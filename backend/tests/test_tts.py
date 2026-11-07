@@ -31,13 +31,48 @@ def test_tts_returns_mp3_and_caches(client, eleven):
     assert r2.headers["x-tts-cache"] == "hit" and len(eleven) == 1  # second time served from cache
     req = eleven[0]
     assert req.headers["xi-api-key"] == "test-eleven"
-    assert b'"model_id":"eleven_flash_v2_5"' in req.content.replace(b" ", b"") and b'"language_code":"tr"' in req.content.replace(b" ", b"")
+    body = req.content.replace(b" ", b"")
+    assert b'"model_id":"eleven_multilingual_v2"' in body and b'"language_code":"tr"' in body
+    assert req.url.path.endswith("/cgSgspJ2msm6clMCkdW9")  # default voice: Jessica (American, warm)
 
 
 def test_turkish_and_english_cached_separately(client, eleven):
     client.post("/tts", json={"text": "Hello", "language": "en"})
     client.post("/tts", json={"text": "Hello", "language": "tr"})
     assert len(eleven) == 2
+
+
+def test_chosen_voice_is_used_and_cached_separately(client, eleven):
+    client.post("/tts", json={"text": "Hello", "language": "en", "voice": "will"})
+    client.post("/tts", json={"text": "Hello", "language": "en", "voice": "sarah"})
+    client.post("/tts", json={"text": "Hello", "language": "en", "voice": "will"})
+    assert len(eleven) == 2  # the third one is a cache hit
+    assert eleven[0].url.path.endswith("/bIHbv24MWmeRgasZH58o") and eleven[1].url.path.endswith("/EXAVITQu4vr4xnSDxMaL")
+
+
+def test_unknown_or_unset_voice_rejected(client, eleven):
+    assert client.post("/tts", json={"text": "Hi", "language": "en", "voice": "robot"}).status_code == 422
+    assert client.post("/tts", json={"text": "Hi", "language": "en", "voice": "girl"}).status_code == 422  # not set up
+
+
+def test_voices_lists_american_adults_and_missing_children(client):
+    body = client.get("/voices").json()
+    assert body["enabled"] is True and body["default"] == "jessica"
+    kinds = [v["kind"] for v in body["voices"]]
+    assert kinds.count("woman") >= 1 and kinds.count("man") >= 1
+    assert body["missing"] == ["girl", "boy"]
+
+
+def test_child_voices_offered_once_configured(client, eleven, monkeypatch):
+    from app.config import get_settings
+
+    monkeypatch.setenv("ELEVENLABS_VOICE_GIRL", "girl-voice-id")
+    monkeypatch.setenv("ELEVENLABS_VOICE_BOY", "boy-voice-id")
+    get_settings.cache_clear()
+    body = client.get("/voices").json()
+    assert {"girl", "boy"} <= {v["kind"] for v in body["voices"]} and body["missing"] == []
+    assert client.post("/tts", json={"text": "Hi", "language": "en", "voice": "boy"}).status_code == 200
+    assert eleven[-1].url.path.endswith("/boy-voice-id")
 
 
 def test_no_key_means_503_use_browser_voice(client, monkeypatch):

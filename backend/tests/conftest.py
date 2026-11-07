@@ -7,6 +7,8 @@ FAKE_ENV = {
     "GROQ_API_KEY": "test-groq",
     "OPENAI_API_KEY": "",
     "ELEVENLABS_API_KEY": "test-elevenlabs",
+    "ELEVENLABS_VOICE_GIRL": "",  # child voices off unless a test switches them on
+    "ELEVENLABS_VOICE_BOY": "",
     # Nothing listens here, so tests never touch a real database.
     "MONGODB_URI": "mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=200",
     "MONGODB_DB": "echo_test",

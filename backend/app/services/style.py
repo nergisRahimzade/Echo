@@ -76,6 +76,8 @@ async def update_style_profile(db, user_id: str, client: anthropic.AsyncAnthropi
         return None
     profile = await summarize_style(sentences, client)
     total = await db.utterances.count_documents({"user_id": user_id, "status": "approved"})
+    if total == 0:  # the user deleted their data while Claude was summarizing: save nothing
+        return None
     doc = {**profile, "user_id": user_id, "based_on": total, "updated_at": datetime.now(UTC)}
     await db.style_profiles.update_one({"user_id": user_id}, {"$set": doc}, upsert=True)
     logger.info("style profile for %s updated from %d approvals", user_id, total)

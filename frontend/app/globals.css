@@ -13,7 +13,9 @@
   --primary: #1f5eff;
   --primary-foreground: #ffffff;
   --success: #16803c;
+  --success-foreground: #ffffff;
   --danger: #c62828;
+  --danger-foreground: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -26,7 +28,9 @@
     --primary: #5b8cff;
     --primary-foreground: #0b0b0b;
     --success: #3ccf6e;
+    --success-foreground: #0b0b0b;
     --danger: #ff6b6b;
+    --danger-foreground: #0b0b0b;
   }
 }
 
@@ -39,7 +43,9 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --animate-shake: shake 0.45s ease-in-out;
@@ -64,6 +70,13 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Keyboard and switch-access users must always see where they are: one thick, high-contrast
+   ring on every interactive element (mouse and touch users never see it). */
+:where(button, a, input, textarea, [role="radio"], [role="checkbox"], [tabindex]):focus-visible {
+  outline: 4px solid var(--primary);
+  outline-offset: 3px;
 }
 
 /* Long-press on a phone must not open the text-selection or context menu on our buttons. */

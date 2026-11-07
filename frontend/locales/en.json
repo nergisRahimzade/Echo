@@ -113,10 +113,37 @@
     "deleteCancel": "Keep my data",
     "deleting": "Deleting…",
     "deleted": "All your data was deleted.",
-    "deleteError": "Could not delete. Please try again."
+    "deleteError": "Could not delete. Please try again.",
+    "voice": "Echo's voice",
+    "voiceHelp": "The voice Echo speaks your sentences with. Tap a voice to hear it.",
+    "voiceSample": "Hi! This is how I will sound when I speak for you.",
+    "voiceKinds": {
+      "woman": "Woman",
+      "man": "Man",
+      "girl": "Girl",
+      "boy": "Boy"
+    },
+    "voiceStyles": {
+      "bright": "Bright and warm",
+      "calm": "Soft and calm",
+      "friendly": "Friendly and upbeat",
+      "relaxed": "Relaxed and easygoing",
+      "cheerful": "Cheerful"
+    },
+    "voiceChildrenMissing": "Girl and boy voices appear here once they are set up on the Echo server.",
+    "voiceUnavailable": "Natural voices are not available on this server, so Echo uses this device's own voice.",
+    "voiceLoadError": "Could not load the voices.",
+    "voiceSaveError": "Could not save the voice. Please try again.",
+    "startOver": "Start again"
   },
   "prompts": {
     "sayAgain": "Please say it again.",
     "helper": "A helper can type it."
+  },
+  "demo": {
+    "try": "Try the demo account",
+    "loading": "Opening the demo account",
+    "missing": "There is no demo account on this server yet.",
+    "signUp": "Sign up instead"
   }
 }

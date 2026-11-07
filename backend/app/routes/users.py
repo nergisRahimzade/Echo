@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.config import get_settings
 from app.db import get_db
 from app.ids import require_user
+from app.services import privacy, voices
 from app.services.phrases import supported_languages
 
 router = APIRouter(tags=["users"])
@@ -49,7 +50,19 @@ class UserOut(BaseModel):
     main_language: str
     threshold: float
     created_at: datetime
+    voice: str  # the voice Echo speaks with (GET /voices)
     threshold_history: list[ThresholdChange] = []
+
+
+class UpdateUser(BaseModel):
+    voice: str
+
+    @field_validator("voice")
+    @classmethod
+    def known_voice(cls, v: str) -> str:
+        if not voices.is_available(v):
+            raise ValueError(f"unknown voice: {v}")
+        return v
 
 
 @router.post("/users", status_code=201)
@@ -72,20 +85,51 @@ async def create_user(body: CreateUser) -> dict:
     return {"user_id": str(result.inserted_id)}
 
 
-@router.get("/users/{user_id}", response_model=UserOut)
-async def get_user(user_id: str) -> UserOut:
-    """Used by the app on start-up to check the saved user still exists."""
-    user = await require_user(get_db(), user_id)
+def user_out(user: dict) -> UserOut:
     return UserOut(
         user_id=str(user["_id"]),
         name=user["name"],
         main_language=user["main_language"],
         threshold=user["threshold"],
         created_at=user["created_at"],
+        voice=voices.get(user.get("voice")).id,
         threshold_history=[
             ThresholdChange(at=c["at"], to=c["to"], reason=c["reason"]) for c in user.get("threshold_history", [])[-5:]
         ],
     )
+
+
+@router.get("/users/{user_id}", response_model=UserOut)
+async def get_user(user_id: str) -> UserOut:
+    """Used by the app on start-up to check the saved user still exists."""
+    return user_out(await require_user(get_db(), user_id))
+
+
+@router.delete("/users/{user_id}/data")
+async def delete_user_data(user_id: str) -> dict:
+    """Delete everything Echo stores about this user: every document, every recording, and the
+    cached spoken audio of their sentences. Cannot be undone."""
+    db = get_db()
+    user = await require_user(db, user_id)
+    return {"ok": True, **await privacy.delete_everything(db, user)}
+
+
+@router.get("/demo", response_model=UserOut)
+async def demo_user() -> UserOut:
+    """The ready-trained demo account (loaded with scripts/seed_demo.py). 404 when there is none."""
+    user = await get_db().users.find_one({"demo": True}, sort=[("created_at", -1)])
+    if user is None:
+        raise HTTPException(status_code=404, detail="No demo account. Run: python -m scripts.seed_demo")
+    return user_out(user)
+
+
+@router.patch("/users/{user_id}", response_model=UserOut)
+async def update_user(user_id: str, body: UpdateUser) -> UserOut:
+    """Change the user's settings (for now: the voice Echo speaks with)."""
+    db = get_db()
+    user = await require_user(db, user_id)
+    await db.users.update_one({"_id": user["_id"]}, {"$set": {"voice": body.voice}})
+    return user_out({**user, "voice": body.voice})
 
 
 # The progress ring fills toward the next milestone, then starts on the next one.

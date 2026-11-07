@@ -35,6 +35,8 @@ export default function CheckPanel({
         type="button"
         onClick={replay}
         disabled={busy}
+        // Keyboard / switch users land on "hear it again", never straight on yes or no.
+        autoFocus
         aria-label={t("talk.hearGuess")}
         className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-primary text-primary transition active:scale-95 disabled:opacity-50"
       >
@@ -47,7 +49,7 @@ export default function CheckPanel({
           disabled={busy}
           aria-label={t("talk.no")}
           data-testid="check-down"
-          className="flex aspect-square items-center justify-center rounded-3xl bg-danger text-white shadow-lg transition active:scale-95 disabled:opacity-50"
+          className="flex aspect-square items-center justify-center rounded-3xl bg-danger text-danger-foreground shadow-lg transition active:scale-95 disabled:opacity-50"
         >
           <ThumbsDown aria-hidden className="h-20 w-20" strokeWidth={2.5} />
         </button>
@@ -57,7 +59,7 @@ export default function CheckPanel({
           disabled={busy}
           aria-label={t("talk.yes")}
           data-testid="check-up"
-          className="flex aspect-square items-center justify-center rounded-3xl bg-success text-white shadow-lg transition active:scale-95 disabled:opacity-50"
+          className="flex aspect-square items-center justify-center rounded-3xl bg-success text-success-foreground shadow-lg transition active:scale-95 disabled:opacity-50"
         >
           <ThumbsUp aria-hidden className="h-20 w-20" strokeWidth={2.5} />
         </button>
