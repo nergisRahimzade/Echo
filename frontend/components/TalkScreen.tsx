@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, MessageSquarePlus, Repeat, RotateCcw } from "lucide-react";
+import CheckPanel from "@/components/CheckPanel";
 import CountdownThumbDown from "@/components/CountdownThumbDown";
 import HealthBadge from "@/components/HealthBadge";
 import HelperTurnInput from "@/components/HelperTurnInput";
@@ -9,6 +10,7 @@ import HoldToRecord from "@/components/HoldToRecord";
 import ThinkingAnimation from "@/components/ThinkingAnimation";
 import { useUser } from "@/components/UserGate";
 import { ApiError, sendFeedback, translate, type TranslateResult } from "@/lib/api";
+import { playPrompt } from "@/lib/prompts";
 import { currentSessionId, startNewSession } from "@/lib/session";
 import type { Recording } from "@/lib/useRecorder";
 import { sayAloud } from "@/lib/voice";
@@ -20,6 +22,7 @@ type Stage =
   | { kind: "idle" }
   | { kind: "thinking" }
   | { kind: "spoken"; result: TranslateResult; undo: boolean } // said aloud; undo = thumbs-down still offered
+  | { kind: "check"; result: TranslateResult; busy: boolean } // played privately, waiting for 👍 / 👎
   | { kind: "repeat"; result: TranslateResult } // wrong guess: say it again
   | { kind: "error"; message: string };
 
@@ -38,9 +41,16 @@ export default function TalkScreen() {
   const showError = (err: unknown) =>
     setStage({ kind: "error", message: err instanceof ApiError ? err.message : "Something went wrong." });
 
-  const speakToListener = useCallback((result: TranslateResult) => {
-    setStage({ kind: "spoken", result, undo: true });
+  /** Say it aloud for the listener. `undo` offers the 5-second thumbs-down (only when Echo decided alone). */
+  const speakToListener = useCallback((result: TranslateResult, undo = true) => {
+    setStage({ kind: "spoken", result, undo });
     void sayAloud(result.sentence, result.language);
+  }, []);
+
+  /** Wrong guess: ask the user to say it again, in their language. */
+  const askToRepeat = useCallback((result: TranslateResult) => {
+    setStage({ kind: "repeat", result });
+    void playPrompt("sayAgain", result.language);
   }, []);
 
   const onRecorded = useCallback(
@@ -49,7 +59,7 @@ export default function TalkScreen() {
       try {
         const result = await translate({ userId: user.user_id, sessionId, audio: rec.blob });
         if (result.action === "speak") speakToListener(result);
-        else setStage({ kind: "repeat", result }); // the private check flow arrives in task 4.3
+        else setStage({ kind: "check", result, busy: false });
       } catch (err) {
         showError(err);
       }
@@ -61,7 +71,19 @@ export default function TalkScreen() {
   async function flagSpokenAsWrong(result: TranslateResult) {
     try {
       await sendFeedback({ utteranceId: result.utterance_id, verdict: "down" });
-      setStage({ kind: "repeat", result });
+      askToRepeat(result);
+    } catch (err) {
+      showError(err);
+    }
+  }
+
+  // ----- the private check -----
+  async function checkAnswer(result: TranslateResult, verdict: "up" | "down") {
+    setStage({ kind: "check", result, busy: true });
+    try {
+      const { next_action } = await sendFeedback({ utteranceId: result.utterance_id, verdict });
+      if (next_action === "speak") speakToListener(result, false); // the user approved it: no undo needed
+      else askToRepeat(result);
     } catch (err) {
       showError(err);
     }
@@ -102,6 +124,15 @@ export default function TalkScreen() {
               />
             )}
           </>
+        )}
+
+        {stage.kind === "check" && (
+          <CheckPanel
+            result={stage.result}
+            busy={stage.busy}
+            onUp={() => checkAnswer(stage.result, "up")}
+            onDown={() => checkAnswer(stage.result, "down")}
+          />
         )}
 
         {stage.kind === "repeat" && (
