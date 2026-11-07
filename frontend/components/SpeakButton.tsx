@@ -2,10 +2,10 @@
 
 import { Volume2 } from "lucide-react";
 import type { Language } from "@/lib/api";
-import { speak } from "@/lib/speech";
+import { sayAloud } from "@/lib/voice";
 import { useT } from "@/lib/i18n";
 
-/** A round speaker icon that reads `text` aloud, so nobody has to read it. */
+/** A round speaker icon that reads `text` aloud in Echo's voice, so nobody has to read it. */
 export default function SpeakButton({
   text,
   language,
@@ -26,7 +26,7 @@ export default function SpeakButton({
       type="button"
       aria-label={text_label}
       title={text_label}
-      onClick={() => speak(text, language)}
+      onClick={() => void sayAloud(text, language)}
       className={`${dims} flex shrink-0 items-center justify-center rounded-full border-2 border-primary text-primary transition active:scale-95 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-primary`}
     >
       <Volume2 aria-hidden className={icon} strokeWidth={2.5} />

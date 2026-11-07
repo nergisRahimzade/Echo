@@ -21,7 +21,7 @@ import HoldToRecord from "@/components/HoldToRecord";
 import ProgressRing from "@/components/ProgressRing";
 import { useUser } from "@/components/UserGate";
 import { enroll, getPhrases, getSamples, type Language, type Phrase } from "@/lib/api";
-import { speak, stopSpeaking } from "@/lib/speech";
+import { preloadVoice, sayAloud, stopVoice } from "@/lib/voice";
 import type { Recording } from "@/lib/useRecorder";
 import { showError, toUiError, useT, type UiError } from "@/lib/i18n";
 
@@ -68,16 +68,20 @@ export default function EnrollFlow() {
       });
     return () => {
       cancelled = true;
-      stopSpeaking();
+      stopVoice();
     };
   }, [lang, user.user_id]);
 
   const phrase = phrases[index];
 
-  // Echo says the phrase aloud each time a new one appears.
+  // Echo says the phrase aloud (in the voice chosen in Settings) each time a new one appears,
+  // and loads the next phrase's audio in the background so it plays without a wait.
   useEffect(() => {
-    if (stage === "phrase" && phrase) void speak(phrase.text, lang);
-  }, [stage, phrase, lang]);
+    if (stage !== "phrase" || !phrase) return;
+    void sayAloud(phrase.text, lang);
+    const next = phrases[(index + 1) % phrases.length];
+    if (next && next.id !== phrase.id) preloadVoice(next.text, lang);
+  }, [stage, phrase, lang, phrases, index]);
 
   const goToNext = useCallback(
     (doneNow: Set<string>, skippedNow: Set<string>) => {
@@ -90,7 +94,7 @@ export default function EnrollFlow() {
           return;
         }
       }
-      stopSpeaking();
+      stopVoice();
       setStage("finished");
     },
     [index, phrases],
@@ -239,7 +243,7 @@ export default function EnrollFlow() {
         </span>
         <button
           type="button"
-          onClick={() => speak(phrase.text, lang)}
+          onClick={() => void sayAloud(phrase.text, lang)}
           aria-label={t("enroll.hearAgain")}
           className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-primary text-primary transition active:scale-95"
         >

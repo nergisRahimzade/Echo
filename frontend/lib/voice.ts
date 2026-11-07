@@ -55,12 +55,29 @@ async function serverAudio(text: string, language: Language, voice: string | und
   }
 }
 
+let latest = 0; // each sayAloud/stopVoice call gets a number; only the newest one may start playing
+
 export async function sayAloud(text: string, language: Language, opts: SayOptions = {}): Promise<void> {
   if (!text.trim()) return;
+  const mine = ++latest;
   const volume = opts.privately ? PRIVATE_VOLUME : 1;
   const url = await serverAudio(text, language, opts.voice ?? chosenVoice);
+  if (mine !== latest) return; // something newer was said (or stopped) while this was loading
   if (url) return playUrl(url, volume);
   await speak(text, language, { volume, rate: 0.95 });
+}
+
+/** Stop whatever Echo is saying, including a sentence that is still loading. */
+export function stopVoice(): void {
+  latest++;
+  current?.pause();
+  current = null;
+  stopSpeaking();
+}
+
+/** Fetch a sentence in the chosen voice ahead of time, so it plays instantly later. */
+export function preloadVoice(text: string, language: Language): void {
+  if (text.trim()) void serverAudio(text, language, chosenVoice);
 }
 
 /** Play a pre-recorded file if it exists (e.g. /prompts/tr/sayAgain.mp3); false if it doesn't. */
