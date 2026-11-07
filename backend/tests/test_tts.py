@@ -33,6 +33,7 @@ def test_tts_returns_mp3_and_caches(client, eleven):
     assert req.headers["xi-api-key"] == "test-eleven"
     body = req.content.replace(b" ", b"")
     assert b'"model_id":"eleven_multilingual_v2"' in body and b'"language_code":"tr"' in body
+    assert b'"speed":0.9' in body  # a little slower than normal
     assert req.url.path.endswith("/cgSgspJ2msm6clMCkdW9")  # default voice: Jessica (American, warm)
 
 

@@ -64,7 +64,7 @@ export async function sayAloud(text: string, language: Language, opts: SayOption
   const url = await serverAudio(text, language, opts.voice ?? chosenVoice);
   if (mine !== latest) return; // something newer was said (or stopped) while this was loading
   if (url) return playUrl(url, volume);
-  await speak(text, language, { volume, rate: 0.95 });
+  await speak(text, language, { volume, rate: 0.9 }); // same pace as the natural voices
 }
 
 /** Stop whatever Echo is saying, including a sentence that is still loading. */
