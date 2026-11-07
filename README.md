@@ -28,3 +28,13 @@ uvicorn app.main:app --reload
 ```
 
 Then open http://localhost:8000/health. It should return `{"status": "ok"}`.
+
+## Run the frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Then open http://localhost:3000.

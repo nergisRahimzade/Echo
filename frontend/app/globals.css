@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/*
+  Echo colour tokens. High contrast on purpose: many users have tired eyes or low vision.
+  Use them in Tailwind as bg-background, text-foreground, bg-primary, etc.
+*/
+:root {
+  --background: #fbf8f3;
+  --surface: #ffffff;
+  --foreground: #1b1a17;
+  --muted: #5c574e;
+  --border: #d9d2c5;
+  --primary: #1f5eff;
+  --primary-foreground: #ffffff;
+  --success: #16803c;
+  --danger: #c62828;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #121212;
+    --surface: #1e1e1e;
+    --foreground: #f5f2ec;
+    --muted: #b8b2a7;
+    --border: #3a3832;
+    --primary: #5b8cff;
+    --primary-foreground: #0b0b0b;
+    --success: #3ccf6e;
+    --danger: #ff6b6b;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Long-press on a phone must not open the text-selection or context menu on our buttons. */
+button {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
