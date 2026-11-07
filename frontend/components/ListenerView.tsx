@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { FlipVertical2, Maximize2 } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 /**
  * "Show to listener": fills the whole screen with the sentence so the other person can read it.
  * Tap anywhere to close. The flip icon turns it 180° for someone sitting opposite.
  */
 export default function ListenerView({ sentence, language }: { sentence: string; language: string }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [flipped, setFlipped] = useState(false);
 
@@ -23,8 +25,8 @@ export default function ListenerView({ sentence, language }: { sentence: string;
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Show to listener"
-        title="Show to listener"
+        aria-label={t("talk.showListener")}
+        title={t("talk.showListener")}
         data-testid="show-listener"
         className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-border bg-surface transition active:scale-95"
       >
@@ -35,7 +37,7 @@ export default function ListenerView({ sentence, language }: { sentence: string;
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Sentence for the listener. Tap to close."
+          aria-label={t("talk.listenerDialog")}
           data-testid="listener-view"
           onClick={() => setOpen(false)}
           className="fixed inset-0 z-50 flex cursor-pointer items-center justify-center bg-background p-6"
@@ -53,7 +55,7 @@ export default function ListenerView({ sentence, language }: { sentence: string;
               e.stopPropagation(); // flipping must not close the view
               setFlipped((f) => !f);
             }}
-            aria-label="Turn upside down for someone sitting opposite"
+            aria-label={t("talk.flip")}
             aria-pressed={flipped}
             data-testid="flip-listener"
             className="absolute bottom-6 right-6 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-border bg-surface"

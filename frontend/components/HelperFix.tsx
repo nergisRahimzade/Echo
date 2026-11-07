@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { HandHelping, Loader2, Send } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 /**
  * After two wrong guesses Echo stops guessing. A big "helper" icon opens a text box where the
  * listener or a caregiver types what was meant; it is saved as a correction Echo learns from.
  */
 export default function HelperFix({ onSubmit }: { onSubmit: (text: string) => Promise<void> }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -17,7 +19,7 @@ export default function HelperFix({ onSubmit }: { onSubmit: (text: string) => Pr
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Ask a helper to type it"
+        aria-label={t("talk.askHelper")}
         data-testid="helper-icon"
         className="flex h-36 w-36 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition active:scale-95"
       >
@@ -44,7 +46,7 @@ export default function HelperFix({ onSubmit }: { onSubmit: (text: string) => Pr
     >
       <label className="flex flex-col gap-2">
         <span className="flex items-center gap-2 text-lg text-muted">
-          <HandHelping aria-hidden className="h-6 w-6" /> What did they mean?
+          <HandHelping aria-hidden className="h-6 w-6" /> {t("talk.helperQuestion")}
         </span>
         <textarea
           autoFocus
@@ -58,7 +60,7 @@ export default function HelperFix({ onSubmit }: { onSubmit: (text: string) => Pr
       <button
         type="submit"
         disabled={busy || !text.trim()}
-        aria-label="Save and say it"
+        aria-label={t("talk.saveAndSay")}
         className="flex min-h-20 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-lg transition active:scale-95 disabled:opacity-40"
       >
         {busy ? <Loader2 aria-hidden className="h-9 w-9 animate-spin" /> : <Send aria-hidden className="h-9 w-9" />}

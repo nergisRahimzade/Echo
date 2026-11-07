@@ -8,21 +8,17 @@ import Header from "@/components/Header";
 import SpeakButton from "@/components/SpeakButton";
 import { ApiError, createUser } from "@/lib/api";
 import { saveUser, speakingLanguage, type MainLanguage } from "@/lib/user";
+import { translate, useI18n } from "@/lib/i18n";
 
 const LANGUAGES: { value: MainLanguage; flags: FlagCode[]; label: string }[] = [
   { value: "tr", flags: ["tr"], label: "Türkçe" },
   { value: "en", flags: ["gb"], label: "English" },
-  { value: "both", flags: ["tr", "gb"], label: "Both / İkisi" },
+  { value: "both", flags: ["tr", "gb"], label: "both" },
 ];
-
-// Shown and read aloud in the language picked above.
-const CONSENT_TEXT = {
-  tr: "Echo nasıl konuştuğunu öğrenmek için sesini kaydeder. Kayıtların sadece senin için saklanır, izin vermeden başka kimse için kullanılmaz ve istediğin zaman hepsini tek tuşla silebilirsin.",
-  en: "Echo records your voice to learn how you speak. Your recordings are kept only for you, are never used for anyone else without your permission, and you can delete all of them with one button at any time.",
-};
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { t, lang: uiLang, setLang } = useI18n();
   const [name, setName] = useState("");
   const [language, setLanguage] = useState<MainLanguage>("tr");
   const [consent, setConsent] = useState(false);
@@ -30,6 +26,12 @@ export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
 
   const speakLang = speakingLanguage({ main_language: language });
+  // Picking a language switches the whole screen to it right away.
+  const chooseLanguage = (value: MainLanguage) => {
+    setLanguage(value);
+    setLang(speakingLanguage({ main_language: value }), false);
+  };
+  const consentText = translate(speakLang, "onboarding.consent");
   const canSubmit = name.trim().length > 0 && consent && !saving;
 
   async function submit(e: React.FormEvent) {
@@ -40,9 +42,10 @@ export default function OnboardingPage() {
     try {
       const { user_id } = await createUser(name.trim(), language, consent);
       saveUser({ user_id, name: name.trim(), main_language: language });
+      setLang(uiLang); // remember the interface language that was used to sign up
       router.replace("/enroll"); // next step: teach Echo your voice
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof ApiError ? err.message : t("common.somethingWrong"));
       setSaving(false);
     }
   }
@@ -52,14 +55,14 @@ export default function OnboardingPage() {
       <Header />
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-8 px-4 py-8">
         <div>
-          <h1 className="text-3xl font-bold">Welcome to Echo</h1>
-          <p className="mt-2 text-lg text-muted">A family member or helper can fill this in.</p>
+          <h1 className="text-3xl font-bold">{t("onboarding.title")}</h1>
+          <p className="mt-2 text-lg text-muted">{t("onboarding.helperNote")}</p>
         </div>
 
         <form onSubmit={submit} className="flex flex-col gap-8">
           {/* Name */}
           <label className="flex flex-col gap-2">
-            <span className="text-xl font-semibold">Name / İsim</span>
+            <span className="text-xl font-semibold">{t("onboarding.name")}</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -71,7 +74,7 @@ export default function OnboardingPage() {
 
           {/* Main language */}
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-xl font-semibold">Language / Dil</legend>
+            <legend className="mb-2 text-xl font-semibold">{t("onboarding.language")}</legend>
             <div className="grid grid-cols-3 gap-3">
               {LANGUAGES.map((l) => {
                 const selected = language === l.value;
@@ -80,7 +83,7 @@ export default function OnboardingPage() {
                     key={l.value}
                     type="button"
                     aria-pressed={selected}
-                    onClick={() => setLanguage(l.value)}
+                    onClick={() => chooseLanguage(l.value)}
                     className={`flex min-h-28 flex-col items-center justify-center gap-1 rounded-2xl border-4 px-2 py-3 transition active:scale-95 ${
                       selected ? "border-primary bg-primary/10" : "border-border bg-surface"
                     }`}
@@ -90,7 +93,7 @@ export default function OnboardingPage() {
                         <Flag key={f} code={f} className={l.flags.length > 1 ? "h-7 w-10" : "h-9 w-14"} />
                       ))}
                     </span>
-                    <span className="text-center text-base font-semibold">{l.label}</span>
+                    <span className="text-center text-base font-semibold">{l.label === "both" ? t("onboarding.both") : l.label}</span>
                   </button>
                 );
               })}
@@ -100,8 +103,8 @@ export default function OnboardingPage() {
           {/* Consent */}
           <div className="flex flex-col gap-4 rounded-2xl border-2 border-border bg-surface p-4">
             <div className="flex items-start gap-4">
-              <p className="flex-1 text-lg leading-relaxed">{CONSENT_TEXT[speakLang]}</p>
-              <SpeakButton text={CONSENT_TEXT[speakLang]} language={speakLang} label="Read consent aloud" />
+              <p className="flex-1 text-lg leading-relaxed">{consentText}</p>
+              <SpeakButton text={consentText} language={speakLang} label={t("onboarding.consentAloud")} />
             </div>
             <button
               type="button"
@@ -119,7 +122,7 @@ export default function OnboardingPage() {
               >
                 {consent && <Check aria-hidden className="h-7 w-7" strokeWidth={3.5} />}
               </span>
-              {speakLang === "tr" ? "Kabul ediyorum" : "I agree"}
+              {translate(speakLang, "onboarding.agree")}
             </button>
           </div>
 
@@ -132,7 +135,7 @@ export default function OnboardingPage() {
           <button
             type="submit"
             disabled={!canSubmit}
-            aria-label="Continue"
+            aria-label={t("onboarding.continue")}
             className="flex min-h-20 items-center justify-center gap-3 rounded-3xl bg-primary text-2xl font-semibold text-primary-foreground shadow-lg transition active:scale-95 disabled:opacity-40"
           >
             {saving ? (

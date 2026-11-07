@@ -17,6 +17,7 @@ import { playPrompt } from "@/lib/prompts";
 import { currentSessionId, startNewSession } from "@/lib/session";
 import type { Recording } from "@/lib/useRecorder";
 import { sayAloud } from "@/lib/voice";
+import { useI18n } from "@/lib/i18n";
 
 /** How long the thumbs-down stays after Echo speaks on its own. */
 const UNDO_SECONDS = 5;
@@ -36,6 +37,7 @@ type Stage =
  */
 export default function TalkScreen() {
   const user = useUser();
+  const { t, lang: uiLang } = useI18n();
   const [sessionId, setSessionId] = useState<string>("");
   const [stage, setStage] = useState<Stage>({ kind: "idle" });
   const [learnedKey, setLearnedKey] = useState(0); // bump after each approval to refresh the ring
@@ -44,8 +46,10 @@ export default function TalkScreen() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is only readable after mount
   useEffect(() => setSessionId(currentSessionId()), []);
 
-  const showError = (err: unknown) =>
-    setStage({ kind: "error", message: err instanceof ApiError ? err.message : "Something went wrong." });
+  const showError = useCallback(
+    (err: unknown) => setStage({ kind: "error", message: err instanceof ApiError ? err.message : t("common.somethingWrong") }),
+    [t],
+  );
 
   /** Say it aloud for the listener. `undo` offers the 5-second thumbs-down (only when Echo decided alone). */
   const speakToListener = useCallback((result: TranslateResult, undo = true) => {
@@ -56,14 +60,14 @@ export default function TalkScreen() {
   /** Wrong guess: ask the user to say it again, in their language. */
   const askToRepeat = useCallback((result: TranslateResult) => {
     setStage({ kind: "repeat", result });
-    void playPrompt("sayAgain", result.language);
-  }, []);
+    void playPrompt("sayAgain", uiLang); // prompts are for the user: in the app language
+  }, [uiLang]);
 
   /** Second wrong guess in a row: stop guessing, offer the helper. */
   const callHelper = useCallback((result: TranslateResult) => {
     setStage({ kind: "helper", result });
-    void playPrompt("helper", result.language);
-  }, []);
+    void playPrompt("helper", uiLang);
+  }, [uiLang]);
 
   const afterThumbsDown = (result: TranslateResult, nextAction: string) =>
     nextAction === "helper" ? callHelper(result) : askToRepeat(result);
@@ -79,7 +83,7 @@ export default function TalkScreen() {
         showError(err);
       }
     },
-    [user.user_id, sessionId, speakToListener],
+    [user.user_id, sessionId, speakToListener, showError],
   );
 
   // ----- after Echo spoke on its own -----
@@ -168,7 +172,7 @@ export default function TalkScreen() {
         {stage.kind === "repeat" && (
           <div className="flex flex-col items-center gap-3" data-testid="repeat-prompt">
             <span className="flex h-28 w-28 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Repeat aria-label="Say it again" className="h-14 w-14" />
+              <Repeat aria-label={t("talk.sayAgain")} className="h-14 w-14" />
             </span>
           </div>
         )}
@@ -182,7 +186,7 @@ export default function TalkScreen() {
             <button
               type="button"
               onClick={() => setStage({ kind: "idle" })}
-              aria-label="Try again"
+              aria-label={t("common.tryAgain")}
               className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-border"
             >
               <RotateCcw aria-hidden className="h-8 w-8" />
@@ -201,8 +205,8 @@ export default function TalkScreen() {
         <button
           type="button"
           onClick={newConversation}
-          aria-label="Start a new conversation"
-          title="Start a new conversation"
+          aria-label={t("talk.newConversation")}
+          title={t("talk.newConversation")}
           className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-border bg-surface transition active:scale-95"
         >
           <MessageSquarePlus aria-hidden className="h-8 w-8" />

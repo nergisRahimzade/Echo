@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ThumbsDown } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 /**
  * A big thumbs-down that stays for `seconds` with a shrinking ring around it.
@@ -16,6 +17,7 @@ export default function CountdownThumbDown({
   onDown: () => void;
   onExpire: () => void;
 }) {
+  const t = useT();
   const [left, setLeft] = useState(seconds);
   const done = useRef(false);
   const expire = useRef(onExpire);
@@ -43,7 +45,7 @@ export default function CountdownThumbDown({
   return (
     <button
       type="button"
-      aria-label="That is wrong"
+      aria-label={t("talk.wrong")}
       data-testid="thumbs-down-countdown"
       onClick={() => {
         if (done.current) return;

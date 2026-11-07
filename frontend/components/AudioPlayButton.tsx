@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 /** A big round play/pause icon for a recorded clip. */
-export default function AudioPlayButton({ blob, label = "Play recording" }: { blob: Blob; label?: string }) {
+export default function AudioPlayButton({ blob, label }: { blob: Blob; label?: string }) {
+  const t = useT();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -41,7 +43,7 @@ export default function AudioPlayButton({ blob, label = "Play recording" }: { bl
       )}
       <button
         type="button"
-        aria-label={playing ? "Pause" : label}
+        aria-label={playing ? t("common.pause") : (label ?? t("common.play"))}
         onClick={toggle}
         className="flex h-20 w-20 items-center justify-center rounded-full bg-success text-white shadow-md transition active:scale-95"
       >

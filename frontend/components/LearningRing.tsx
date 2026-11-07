@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Sprout } from "lucide-react";
 import { getProgress, type Progress } from "@/lib/api";
+import { useT } from "@/lib/i18n";
 
 /**
  * How much Echo has learned: a ring that fills as approved sentences grow (toward the next
@@ -10,6 +11,7 @@ import { getProgress, type Progress } from "@/lib/api";
  * Pass a new `refreshKey` after each approval to update it.
  */
 export default function LearningRing({ userId, refreshKey = 0 }: { userId: string; refreshKey?: number }) {
+  const t = useT();
   const [progress, setProgress] = useState<Progress | null>(null);
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export default function LearningRing({ userId, refreshKey = 0 }: { userId: strin
   const size = 64;
   const r = 27;
   const c = 2 * Math.PI * r;
-  const label = `${learned} sentences learned`;
+  const label = t("talk.learned", { n: learned });
 
   return (
     <div className="flex items-center gap-2" role="img" aria-label={label} title={label} data-testid="learning-ring" data-learned={learned}>

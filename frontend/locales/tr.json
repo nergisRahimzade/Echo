@@ -1,0 +1,119 @@
+{
+  "common": {
+    "loading": "Yükleniyor",
+    "tryAgain": "Tekrar dene",
+    "somethingWrong": "Bir şeyler ters gitti. Lütfen tekrar dene.",
+    "readAloud": "Sesli oku",
+    "close": "Kapat",
+    "home": "Ana sayfa",
+    "play": "Kaydı dinle",
+    "pause": "Durdur",
+    "thinking": "Düşünüyor"
+  },
+  "nav": {
+    "talk": "Konuş",
+    "enroll": "Echo'ya sesini öğret",
+    "words": "İsimler ve yerler",
+    "settings": "Ayarlar"
+  },
+  "health": {
+    "checking": "Sunucu kontrol ediliyor",
+    "offline": "Sunucuya ulaşılamıyor",
+    "ok": "Sunucu ve veritabanı bağlı",
+    "dbProblem": "Sunucu açık, veritabanı: {db}"
+  },
+  "onboarding": {
+    "title": "Echo'ya hoş geldin",
+    "helperNote": "Bunu bir aile üyesi ya da yardımcı doldurabilir.",
+    "name": "İsim",
+    "language": "Dil",
+    "both": "İkisi",
+    "consentAloud": "İzin metnini sesli oku",
+    "continue": "Devam",
+    "consent": "Echo nasıl konuştuğunu öğrenmek için sesini kaydeder. Kayıtların sadece senin için saklanır, izin vermeden başka kimse için kullanılmaz ve istediğin zaman hepsini tek tuşla silebilirsin.",
+    "agree": "Kabul ediyorum"
+  },
+  "recorder": {
+    "holdToTalk": "Basılı tut ve konuş",
+    "tapToTalk": "Dokun ve konuş",
+    "recordingHold": "Kaydediliyor, bitirmek için bırak",
+    "recordingTap": "Kaydediliyor, bitirmek için dokun",
+    "micBlocked": "Mikrofon engellendi",
+    "unsupported": "Bu tarayıcı kayıt yapamıyor",
+    "holdLonger": "Biraz daha uzun bas",
+    "speakLonger": "Biraz daha uzun konuş",
+    "switchToTap": "Dokunarak başlat ve bitir moduna geç",
+    "switchToHold": "Basılı tutma moduna geç",
+    "modeHold": "Basılı tut",
+    "modeTap": "Dokun"
+  },
+  "enroll": {
+    "loadError": "Cümleler yüklenemedi.",
+    "saveError": "Kaydedilemedi. Lütfen tekrar dene.",
+    "start": "Başla",
+    "skip": "Bu cümleyi atla",
+    "hearAgain": "Cümleyi tekrar dinle",
+    "recordAgain": "Tekrar kaydet",
+    "listen": "Kaydını dinle",
+    "saveNext": "Kaydet ve sonraki cümleye geç",
+    "addWords": "İsim ve yer ekle",
+    "recordAllAgain": "Cümleleri tekrar kaydet",
+    "progress": "{total} cümleden {done} tanesi kaydedildi"
+  },
+  "words": {
+    "title": "İsimler ve yerler",
+    "subtitle": "Aile, arkadaşlar, yerler ve evcil hayvanlar. Bir yardımcı yazabilir.",
+    "type": "Tür",
+    "person": "Kişi",
+    "place": "Yer",
+    "pet": "Hayvan",
+    "other": "Diğer",
+    "input": "İsim ya da yer",
+    "placeholder": "Zeynep, Kadıköy…",
+    "add": "Ekle",
+    "list": "Kayıtlı isimler ve yerler",
+    "record": "{word} nasıl söylüyorsun, kaydet",
+    "recordAgain": "{word} için tekrar kaydet",
+    "delete": "{word} sil",
+    "loadError": "Kelimeler yüklenemedi.",
+    "saveError": "Kelime kaydedilemedi.",
+    "deleteError": "Kelime silinemedi.",
+    "recordError": "Kayıt kaydedilemedi."
+  },
+  "talk": {
+    "newConversation": "Yeni bir konuşma başlat",
+    "sayAgain": "Tekrar söyle",
+    "otherSaid": "Karşındaki kişinin söylediğini yaz",
+    "otherSaidInput": "Karşındaki kişinin söylediği",
+    "saveOtherSaid": "Söylediğini kaydet",
+    "saveError": "Kaydedilemedi.",
+    "wrong": "Bu yanlış",
+    "hearGuess": "Echo'nun tahminini tekrar dinle",
+    "no": "Hayır, bu yanlış",
+    "yes": "Evet, bu doğru",
+    "askHelper": "Bir yardımcıdan yazmasını iste",
+    "helperQuestion": "Ne demek istedi?",
+    "saveAndSay": "Kaydet ve söyle",
+    "showListener": "Karşındakine göster",
+    "listenerDialog": "Karşındaki kişi için cümle. Kapatmak için dokun.",
+    "flip": "Karşıda oturan biri için ters çevir",
+    "learned": "{n} cümle öğrenildi"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "language": "Uygulama dili",
+    "languageHelp": "Düğmeler, mesajlar ve sesli uyarılar.",
+    "privacy": "Verilerin",
+    "deleteAll": "Verilerimi sil",
+    "deleteHelp": "Ses kayıtlarını, isimleri, cümleleri ve ayarlarını Echo'dan siler. Bu geri alınamaz.",
+    "deleteConfirm": "Her şeyi sil",
+    "deleteCancel": "Verilerimi sakla",
+    "deleting": "Siliniyor…",
+    "deleted": "Tüm verilerin silindi.",
+    "deleteError": "Silinemedi. Lütfen tekrar dene."
+  },
+  "prompts": {
+    "sayAgain": "Lütfen tekrar söyle.",
+    "helper": "Bir yardımcı yazabilir."
+  }
+}

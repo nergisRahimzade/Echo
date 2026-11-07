@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { ApiError, getUser } from "@/lib/api";
 import { clearUser, loadUser, saveUser, type SavedUser } from "@/lib/user";
+import { useT } from "@/lib/i18n";
 
 const UserContext = createContext<SavedUser | null>(null);
 
@@ -22,6 +23,7 @@ export function useUser(): SavedUser {
  */
 export default function UserGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const t = useT();
   const [user, setUser] = useState<SavedUser | null>(null);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export default function UserGate({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="flex flex-1 items-center justify-center" aria-busy="true">
-        <Loader2 aria-label="Loading" className="h-12 w-12 animate-spin text-muted" />
+        <Loader2 aria-label={t("common.loading")} className="h-12 w-12 animate-spin text-muted" />
       </div>
     );
   }

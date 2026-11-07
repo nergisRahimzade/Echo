@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Keyboard, Loader2, Send, X } from "lucide-react";
 import { addTurn, ApiError } from "@/lib/api";
+import { useT } from "@/lib/i18n";
 
 /**
  * Optional, for a helper: type what the OTHER person said, so Echo knows the topic.
@@ -17,6 +18,7 @@ export default function HelperTurnInput({
   sessionId: string;
   onAdded?: (text: string) => void;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,7 +36,7 @@ export default function HelperTurnInput({
       setText("");
       setOpen(false);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not save.");
+      setError(err instanceof ApiError ? err.message : t("talk.saveError"));
     } finally {
       setBusy(false);
     }
@@ -45,8 +47,8 @@ export default function HelperTurnInput({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Type what the other person said"
-        title="Type what the other person said"
+        aria-label={t("talk.otherSaid")}
+        title={t("talk.otherSaid")}
         className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-border bg-surface transition active:scale-95"
       >
         <Keyboard aria-hidden className="h-8 w-8" />
@@ -62,14 +64,14 @@ export default function HelperTurnInput({
           value={text}
           onChange={(e) => setText(e.target.value)}
           maxLength={500}
-          aria-label="What the other person said"
+          aria-label={t("talk.otherSaidInput")}
           placeholder="…"
           className="min-h-16 min-w-0 flex-1 rounded-2xl border-2 border-border bg-surface px-4 text-xl outline-none focus:border-primary"
         />
         <button
           type="submit"
           disabled={busy || !text.trim()}
-          aria-label="Save what they said"
+          aria-label={t("talk.saveOtherSaid")}
           className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground disabled:opacity-40"
         >
           {busy ? <Loader2 aria-hidden className="h-8 w-8 animate-spin" /> : <Send aria-hidden className="h-8 w-8" />}
@@ -77,7 +79,7 @@ export default function HelperTurnInput({
         <button
           type="button"
           onClick={() => setOpen(false)}
-          aria-label="Close"
+          aria-label={t("common.close")}
           className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-border"
         >
           <X aria-hidden className="h-8 w-8" />

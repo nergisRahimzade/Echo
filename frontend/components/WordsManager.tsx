@@ -4,15 +4,16 @@ import { useEffect, useState } from "react";
 import { Check, Loader2, MapPin, Mic, PawPrint, Plus, Star, UserRound, X } from "lucide-react";
 import HoldToRecord from "@/components/HoldToRecord";
 import { useUser } from "@/components/UserGate";
-import { addWords, ApiError, deleteWord, enroll, getSamples, getWords, type PersonalWord, type WordKind } from "@/lib/api";
+import { addWords, deleteWord, enroll, getSamples, getWords, type PersonalWord, type WordKind } from "@/lib/api";
 import { speakingLanguage } from "@/lib/user";
 import type { Recording } from "@/lib/useRecorder";
+import { showError, toUiError, useT, type UiError } from "@/lib/i18n";
 
-const KINDS: { kind: WordKind; label: string; Icon: typeof UserRound }[] = [
-  { kind: "person", label: "Person", Icon: UserRound },
-  { kind: "place", label: "Place", Icon: MapPin },
-  { kind: "pet", label: "Pet", Icon: PawPrint },
-  { kind: "other", label: "Other", Icon: Star },
+const KINDS: { kind: WordKind; Icon: typeof UserRound }[] = [
+  { kind: "person", Icon: UserRound },
+  { kind: "place", Icon: MapPin },
+  { kind: "pet", Icon: PawPrint },
+  { kind: "other", Icon: Star },
 ];
 const kindIcon = (kind: WordKind) => KINDS.find((k) => k.kind === kind)!.Icon;
 const sameWord = (a: string, b: string) => a.toLocaleLowerCase() === b.toLocaleLowerCase();
@@ -23,6 +24,7 @@ const sameWord = (a: string, b: string) => a.toLocaleLowerCase() === b.toLocaleL
  */
 export default function WordsManager() {
   const user = useUser();
+  const t = useT();
   const language = speakingLanguage(user);
   const [words, setWords] = useState<PersonalWord[]>([]);
   const [recorded, setRecorded] = useState<Set<string>>(new Set());
@@ -31,7 +33,7 @@ export default function WordsManager() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [recordingFor, setRecordingFor] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UiError | null>(null);
 
   useEffect(() => {
     Promise.all([getWords(user.user_id), getSamples(user.user_id)])
@@ -40,7 +42,7 @@ export default function WordsManager() {
         // A name counts as recorded if there is a sample with no phrase id and the same text.
         setRecorded(new Set(samples.filter((s) => !s.phrase_id).map((s) => s.text.toLocaleLowerCase())));
       })
-      .catch((err) => setError(err instanceof ApiError ? err.message : "Could not load the words."))
+      .catch((err) => setError(toUiError(err, "words.loadError")))
       .finally(() => setLoading(false));
   }, [user.user_id]);
 
@@ -55,7 +57,7 @@ export default function WordsManager() {
       setWords((prev) => [...prev.filter((w) => !sameWord(w.word, word)), { word, kind }]);
       setText("");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not save the word.");
+      setError(toUiError(err, "words.saveError"));
     } finally {
       setBusy(false);
     }
@@ -67,7 +69,7 @@ export default function WordsManager() {
       await deleteWord(user.user_id, word);
       setWords((prev) => prev.filter((w) => !sameWord(w.word, word)));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not delete the word.");
+      setError(toUiError(err, "words.deleteError"));
     }
   }
 
@@ -79,38 +81,38 @@ export default function WordsManager() {
       setRecorded((prev) => new Set(prev).add(word.toLocaleLowerCase()));
       setRecordingFor(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not save the recording.");
+      setError(toUiError(err, "words.recordError"));
     } finally {
       setBusy(false);
     }
   }
 
-  if (loading) return <Loader2 aria-label="Loading" className="mx-auto mt-24 h-12 w-12 animate-spin text-muted" />;
+  if (loading) return <Loader2 aria-label={t("common.loading")} className="mx-auto mt-24 h-12 w-12 animate-spin text-muted" />;
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-6">
       <div>
-        <h1 className="text-3xl font-bold">Names and places</h1>
-        <p className="mt-1 text-lg text-muted">Family, friends, places and pets. A helper can type them.</p>
+        <h1 className="text-3xl font-bold">{t("words.title")}</h1>
+        <p className="mt-1 text-lg text-muted">{t("words.subtitle")}</p>
       </div>
 
       <form onSubmit={add} className="flex flex-col gap-4 rounded-2xl border-2 border-border bg-surface p-4">
-        <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label="Type">
-          {KINDS.map(({ kind: k, label, Icon }) => (
+        <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label={t("words.type")}>
+          {KINDS.map(({ kind: k, Icon }) => (
             <button
               key={k}
               type="button"
               role="radio"
               aria-checked={kind === k}
-              aria-label={label}
-              title={label}
+              aria-label={t(`words.${k}`)}
+              title={t(`words.${k}`)}
               onClick={() => setKind(k)}
               className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl border-4 transition active:scale-95 ${
                 kind === k ? "border-primary bg-primary/10" : "border-border"
               }`}
             >
               <Icon aria-hidden className="h-8 w-8" />
-              <span className="text-sm">{label}</span>
+              <span className="text-sm">{t(`words.${k}`)}</span>
             </button>
           ))}
         </div>
@@ -119,14 +121,14 @@ export default function WordsManager() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             maxLength={60}
-            aria-label="Name or place"
-            placeholder="Zeynep, Kadıköy…"
+            aria-label={t("words.input")}
+            placeholder={t("words.placeholder")}
             className="min-h-16 min-w-0 flex-1 rounded-2xl border-2 border-border bg-background px-4 text-2xl outline-none focus:border-primary"
           />
           <button
             type="submit"
             disabled={busy || !text.trim()}
-            aria-label="Add"
+            aria-label={t("words.add")}
             className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition active:scale-95 disabled:opacity-40"
           >
             <Plus aria-hidden className="h-9 w-9" strokeWidth={3} />
@@ -136,11 +138,11 @@ export default function WordsManager() {
 
       {error && (
         <p role="alert" className="text-lg text-danger">
-          {error}
+          {showError(error, t)}
         </p>
       )}
 
-      <ul className="flex flex-col gap-3" aria-label="Saved names and places" data-testid="word-list">
+      <ul className="flex flex-col gap-3" aria-label={t("words.list")} data-testid="word-list">
         {words.map((w) => {
           const Icon = kindIcon(w.kind);
           const isRecorded = recorded.has(w.word.toLocaleLowerCase());
@@ -153,7 +155,7 @@ export default function WordsManager() {
                 <button
                   type="button"
                   onClick={() => setRecordingFor(open ? null : w.word)}
-                  aria-label={isRecorded ? `Record ${w.word} again` : `Record how you say ${w.word}`}
+                  aria-label={isRecorded ? t("words.recordAgain", { word: w.word }) : t("words.record", { word: w.word })}
                   className={`relative flex h-16 w-16 items-center justify-center rounded-full border-2 transition active:scale-95 ${
                     open ? "border-primary bg-primary text-primary-foreground" : "border-border"
                   }`}
@@ -168,7 +170,7 @@ export default function WordsManager() {
                 <button
                   type="button"
                   onClick={() => remove(w.word)}
-                  aria-label={`Delete ${w.word}`}
+                  aria-label={t("words.delete", { word: w.word })}
                   className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-border text-danger transition active:scale-95"
                 >
                   <X aria-hidden className="h-8 w-8" />

@@ -20,9 +20,10 @@ import Flag from "@/components/Flag";
 import HoldToRecord from "@/components/HoldToRecord";
 import ProgressRing from "@/components/ProgressRing";
 import { useUser } from "@/components/UserGate";
-import { ApiError, enroll, getPhrases, getSamples, type Language, type Phrase } from "@/lib/api";
+import { enroll, getPhrases, getSamples, type Language, type Phrase } from "@/lib/api";
 import { speak, stopSpeaking } from "@/lib/speech";
 import type { Recording } from "@/lib/useRecorder";
+import { showError, toUiError, useT, type UiError } from "@/lib/i18n";
 
 type Stage = "loading" | "start" | "phrase" | "finished" | "error";
 
@@ -32,6 +33,7 @@ type Stage = "loading" | "start" | "phrase" | "finished" | "error";
  */
 export default function EnrollFlow() {
   const user = useUser();
+  const t = useT();
   const [lang, setLang] = useState<Language>(user.main_language === "en" ? "en" : "tr");
   const [stage, setStage] = useState<Stage>("loading");
   const [phrases, setPhrases] = useState<Phrase[]>([]);
@@ -40,7 +42,7 @@ export default function EnrollFlow() {
   const [index, setIndex] = useState(0);
   const [recording, setRecording] = useState<Recording | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UiError | null>(null);
 
   // Load the phrases and what this user already recorded (so enrollment can resume).
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function EnrollFlow() {
       })
       .catch((err) => {
         if (cancelled) return;
-        setError(err instanceof ApiError ? err.message : "Could not load the phrases.");
+        setError(toUiError(err, "enroll.loadError"));
         setStage("error");
       });
     return () => {
@@ -110,7 +112,7 @@ export default function EnrollFlow() {
       setRecorded(doneNow);
       goToNext(doneNow, skipped);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Saving failed. Please try again.");
+      setError(toUiError(err, "enroll.saveError"));
     } finally {
       setUploading(false);
     }
@@ -155,18 +157,18 @@ export default function EnrollFlow() {
     ) : null;
 
   if (stage === "loading") {
-    return <Loader2 aria-label="Loading" className="mx-auto mt-24 h-12 w-12 animate-spin text-muted" />;
+    return <Loader2 aria-label={t("common.loading")} className="mx-auto mt-24 h-12 w-12 animate-spin text-muted" />;
   }
 
   if (stage === "error") {
     return (
       <div className="mt-16 flex flex-col items-center gap-6 px-4 text-center" role="alert">
         <AlertTriangle aria-hidden className="h-20 w-20 text-danger" />
-        <p className="text-lg text-muted">{error}</p>
+        <p className="text-lg text-muted">{error && showError(error, t)}</p>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          aria-label="Try again"
+          aria-label={t("common.tryAgain")}
           className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground"
         >
           <RotateCcw aria-hidden className="h-10 w-10" />
@@ -180,11 +182,11 @@ export default function EnrollFlow() {
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10" data-testid="enroll-finished">
         {languageSwitch}
         <CheckCircle2 aria-hidden className="h-32 w-32 text-success" strokeWidth={2} />
-        <ProgressRing done={doneCount} total={total} size={96} label={`${doneCount} of ${total} phrases recorded`} />
+        <ProgressRing done={doneCount} total={total} size={96} label={t("enroll.progress", { done: doneCount, total })} />
         <div className="flex flex-wrap justify-center gap-4">
-          <IconLink href="/words" label="Add names and places" icon={<UsersRound className="h-10 w-10" />} primary />
-          <IconLink href="/" label="Home" icon={<House className="h-10 w-10" />} />
-          <IconButton onClick={recordAgain} label="Record the phrases again" icon={<RotateCcw className="h-10 w-10" />} />
+          <IconLink href="/words" label={t("enroll.addWords")} icon={<UsersRound className="h-10 w-10" />} primary />
+          <IconLink href="/" label={t("common.home")} icon={<House className="h-10 w-10" />} />
+          <IconButton onClick={recordAgain} label={t("enroll.recordAllAgain")} icon={<RotateCcw className="h-10 w-10" />} />
         </div>
       </div>
     );
@@ -194,7 +196,7 @@ export default function EnrollFlow() {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
         {languageSwitch}
-        <ProgressRing done={doneCount} total={total} size={96} label={`${doneCount} of ${total} phrases recorded`} />
+        <ProgressRing done={doneCount} total={total} size={96} label={t("enroll.progress", { done: doneCount, total })} />
         <div className="flex items-center gap-3 text-muted" aria-hidden>
           <Volume2 className="h-10 w-10" />
           <ArrowRight className="h-6 w-6" />
@@ -203,7 +205,7 @@ export default function EnrollFlow() {
         <button
           type="button"
           onClick={() => setStage("phrase")}
-          aria-label="Start"
+          aria-label={t("enroll.start")}
           className="flex h-36 w-36 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition active:scale-95"
         >
           <Play aria-hidden className="ml-2 h-20 w-20" />
@@ -216,12 +218,12 @@ export default function EnrollFlow() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center gap-6 px-4 py-6">
       <div className="flex w-full items-center justify-between gap-4">
-        <ProgressRing done={doneCount} total={total} label={`${doneCount} of ${total} phrases recorded`} />
+        <ProgressRing done={doneCount} total={total} label={t("enroll.progress", { done: doneCount, total })} />
         {languageSwitch}
         <IconButton
           onClick={skip}
           disabled={uploading}
-          label="Skip this phrase"
+          label={t("enroll.skip")}
           icon={<SkipForward className="h-8 w-8" />}
           small
         />
@@ -235,7 +237,7 @@ export default function EnrollFlow() {
         <button
           type="button"
           onClick={() => speak(phrase.text, lang)}
-          aria-label="Hear the phrase again"
+          aria-label={t("enroll.hearAgain")}
           className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 border-primary text-primary transition active:scale-95"
         >
           <Volume2 aria-hidden className="h-10 w-10" strokeWidth={2.5} />
@@ -248,15 +250,15 @@ export default function EnrollFlow() {
           <IconButton
             onClick={() => setRecording(null)}
             disabled={uploading}
-            label="Record again"
+            label={t("enroll.recordAgain")}
             icon={<RotateCcw className="h-10 w-10" />}
           />
-          <AudioPlayButton blob={recording.blob} label="Listen to your recording" />
+          <AudioPlayButton blob={recording.blob} label={t("enroll.listen")} />
           <button
             type="button"
             onClick={saveAndNext}
             disabled={uploading}
-            aria-label="Save and go to the next phrase"
+            aria-label={t("enroll.saveNext")}
             className="flex h-24 w-24 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition active:scale-95 disabled:opacity-60"
           >
             {uploading ? <Loader2 aria-hidden className="h-12 w-12 animate-spin" /> : <Check aria-hidden className="h-12 w-12" strokeWidth={3} />}
@@ -268,7 +270,7 @@ export default function EnrollFlow() {
 
       {error && (
         <p role="alert" className="flex items-center gap-2 text-lg text-danger">
-          <AlertTriangle aria-hidden className="h-6 w-6" /> {error}
+          <AlertTriangle aria-hidden className="h-6 w-6" /> {showError(error, t)}
         </p>
       )}
     </div>

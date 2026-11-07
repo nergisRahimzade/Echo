@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { ThumbsDown, ThumbsUp, Volume2 } from "lucide-react";
 import type { TranslateResult } from "@/lib/api";
 import { sayAloud } from "@/lib/voice";
+import { useT } from "@/lib/i18n";
 
 /**
  * Echo isn't sure: it plays its guess to the USER only (quietly) and waits.
@@ -20,6 +21,7 @@ export default function CheckPanel({
   onUp: () => void;
   onDown: () => void;
 }) {
+  const t = useT();
   const replay = () => void sayAloud(result.sentence, result.language, { privately: true });
 
   // Play the guess privately as soon as the panel appears.
@@ -33,7 +35,7 @@ export default function CheckPanel({
         type="button"
         onClick={replay}
         disabled={busy}
-        aria-label="Hear Echo's guess again"
+        aria-label={t("talk.hearGuess")}
         className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-primary text-primary transition active:scale-95 disabled:opacity-50"
       >
         <Volume2 aria-hidden className="h-12 w-12" strokeWidth={2.5} />
@@ -43,7 +45,7 @@ export default function CheckPanel({
           type="button"
           onClick={onDown}
           disabled={busy}
-          aria-label="No, that is wrong"
+          aria-label={t("talk.no")}
           data-testid="check-down"
           className="flex aspect-square items-center justify-center rounded-3xl bg-danger text-white shadow-lg transition active:scale-95 disabled:opacity-50"
         >
@@ -53,7 +55,7 @@ export default function CheckPanel({
           type="button"
           onClick={onUp}
           disabled={busy}
-          aria-label="Yes, that is right"
+          aria-label={t("talk.yes")}
           data-testid="check-up"
           className="flex aspect-square items-center justify-center rounded-3xl bg-success text-white shadow-lg transition active:scale-95 disabled:opacity-50"
         >

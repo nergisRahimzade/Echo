@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Hand, Loader2, Mic, MicOff, Pointer, Square } from "lucide-react";
 import { useRecorder, type Recording } from "@/lib/useRecorder";
+import { useT } from "@/lib/i18n";
 
 export type RecordMode = "hold" | "tap";
 const MODE_KEY = "echo.recordMode";
@@ -35,6 +36,7 @@ export default function HoldToRecord({
   disabled?: boolean;
   showModeToggle?: boolean;
 }) {
+  const t = useT();
   const [tooShort, setTooShort] = useState(false);
   const { status, level, elapsedMs, start, stop, isRecording } = useRecorder({
     onRecorded,
@@ -101,16 +103,16 @@ export default function HoldToRecord({
 
   const label =
     status === "denied"
-      ? "Microphone blocked"
+      ? t("recorder.micBlocked")
       : status === "unsupported"
-        ? "Recording not supported in this browser"
+        ? t("recorder.unsupported")
         : isRecording
           ? mode === "hold"
-            ? "Recording, let go to stop"
-            : "Recording, tap to stop"
+            ? t("recorder.recordingHold")
+            : t("recorder.recordingTap")
           : mode === "hold"
-            ? "Hold to talk"
-            : "Tap to talk";
+            ? t("recorder.holdToTalk")
+            : t("recorder.tapToTalk");
 
   const Icon = blocked && !disabled ? MicOff : busy ? Loader2 : isRecording ? (mode === "tap" ? Square : Mic) : Mic;
 
@@ -127,6 +129,8 @@ export default function HoldToRecord({
           type="button"
           aria-label={label}
           aria-pressed={isRecording}
+          data-testid="record-button"
+          data-recording={isRecording}
           disabled={blocked}
           onPointerDown={onPointerDown}
           onPointerUp={onPointerUp}
@@ -147,7 +151,7 @@ export default function HoldToRecord({
       {tooShort && (
         <p role="status" className="flex items-center gap-2 text-lg font-semibold text-danger" data-testid="too-short">
           <Hand aria-hidden className="h-7 w-7" />
-          {mode === "hold" ? "Hold longer" : "Speak a little longer"}
+          {mode === "hold" ? t("recorder.holdLonger") : t("recorder.speakLonger")}
         </p>
       )}
 
@@ -170,12 +174,12 @@ export default function HoldToRecord({
           type="button"
           onClick={toggleMode}
           disabled={isRecording}
-          aria-label={mode === "hold" ? "Switch to tap to start and stop" : "Switch to press and hold"}
-          title={mode === "hold" ? "Switch to tap mode" : "Switch to hold mode"}
+          aria-label={mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}
+          title={mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}
           className="flex min-h-16 min-w-16 items-center justify-center gap-2 rounded-2xl border-2 border-border bg-surface px-4 text-lg transition active:scale-95 disabled:opacity-40"
         >
           {mode === "hold" ? <Hand aria-hidden className="h-8 w-8" /> : <Pointer aria-hidden className="h-8 w-8" />}
-          <span className="text-muted">{mode === "hold" ? "Hold" : "Tap"}</span>
+          <span className="text-muted">{mode === "hold" ? t("recorder.modeHold") : t("recorder.modeTap")}</span>
         </button>
       )}
     </div>

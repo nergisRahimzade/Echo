@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { Database, Server } from "lucide-react";
 import { getHealth, type Health } from "@/lib/api";
+import { useT } from "@/lib/i18n";
 
 type State = { kind: "loading" } | { kind: "ok"; health: Health } | { kind: "down" };
 
 /** Small status pill in the header: is the server up, is the database connected. */
 export default function HealthBadge() {
+  const t = useT();
   const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {
@@ -28,12 +30,12 @@ export default function HealthBadge() {
   const dbUp = state.kind === "ok" && state.health.db === "connected";
   const label =
     state.kind === "loading"
-      ? "Checking server"
+      ? t("health.checking")
       : !serverUp
-        ? "Server offline"
+        ? t("health.offline")
         : dbUp
-          ? "Server and database connected"
-          : `Server online, database ${state.health.db}`;
+          ? t("health.ok")
+          : t("health.dbProblem", { db: state.health.db });
 
   return (
     <div
