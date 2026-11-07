@@ -3,7 +3,7 @@
 import logging
 from datetime import UTC, datetime, timedelta
 
-from app.services import embeddings
+from app.services import embeddings, style
 from app.services.audio import AudioError
 from app.services.voiceprint import fingerprint_upload
 
@@ -35,6 +35,9 @@ async def on_approved(db, utterance: dict) -> None:
     if update:
         await db.utterances.update_one({"_id": utterance["_id"]}, {"$set": update})
     logger.info("learned utterance %s (%r)", utterance.get("_id"), text[:60])
+    if utterance.get("user_id"):
+        # Every 10 approvals the style profile is rebuilt in the background.
+        await style.maybe_update_in_background(db, utterance["user_id"])
 
 
 async def approve_unanswered_spoken(db, user_id: str) -> int:
