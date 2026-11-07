@@ -6,6 +6,7 @@ words and most-used approved phrases, so Whisper expects *their* vocabulary.
 
 import asyncio
 import logging
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -147,19 +148,60 @@ async def transcribe(
             await client.aclose()
 
 
-async def build_prompt(db, user_id: str, top_phrases: int = 10) -> str:
-    """Hint text: the user's personal words + their most-used approved sentences."""
-    words = [d["word"] async for d in db.personal_words.find({"user_id": user_id}, {"word": 1})]
+# How many names / phrases go into the Whisper hint. Short lists work better: a long list of
+# names can pull Whisper toward the wrong one (measured: "Eylül" heard as "Zeynep").
+MAX_HINT_WORDS = 12
+NAME_TOKEN = re.compile(r"\b([A-ZÇĞİÖŞÜ][\wçğıöşüâîû]+)(?:['’][\wçğıöşü]+)?", re.UNICODE)
+
+
+async def _approved_counts(db, user_id: str) -> dict[str, float]:
+    """Approved sentence -> how often it was said (helper corrections count double: they are the truth)."""
     pipeline = [
         {"$match": {"user_id": user_id, "status": "approved"}},
-        {"$group": {"_id": {"$ifNull": ["$final_text", "$sentence"]}, "n": {"$sum": 1}}},
+        {"$group": {
+            "_id": {"$ifNull": ["$final_text", "$sentence"]},
+            "n": {"$sum": 1},
+            "corrected": {"$sum": {"$cond": [{"$eq": ["$was_corrected", True]}, 1, 0]}},
+        }},
         {"$sort": {"n": -1}},
-        {"$limit": top_phrases},
+        {"$limit": 200},
     ]
-    phrases = [d["_id"] for d in await aggregate(db.utterances, pipeline) if d["_id"]]
+    return {d["_id"]: d["n"] + d["corrected"] for d in await aggregate(db.utterances, pipeline) if d["_id"]}
+
+
+def learned_names(sentences: dict[str, float], known: set[str], min_weight: float = 2) -> list[str]:
+    """Names the user says often that aren't in their personal words (capitalised words not at
+    the start of a sentence, Turkish suffixes like 'Özgür'ü' removed)."""
+    weights: dict[str, float] = {}
+    for text, n in sentences.items():
+        for i, m in enumerate(NAME_TOKEN.finditer(text)):
+            if m.start() == 0 or text[: m.start()].rstrip().endswith((".", "!", "?")):
+                continue  # a capital at the start of a sentence is not a name
+            name = m.group(1)
+            if name.casefold() not in known:
+                weights[name] = weights.get(name, 0) + n
+    return [w for w, n in sorted(weights.items(), key=lambda kv: -kv[1]) if n >= min_weight]
+
+
+async def build_prompt(db, user_id: str, top_phrases: int = 10) -> str:
+    """Hint text for Whisper, rebuilt on every request (so every approval counts immediately):
+    the user's most-used names first, names learned from approved sentences, then their most
+    frequent approved sentences."""
+    words = [d["word"] async for d in db.personal_words.find({"user_id": user_id}, {"word": 1}).sort("created_at", 1)]
+    sentences = await _approved_counts(db, user_id)
+    lowered = {t: t.casefold() for t in sentences}
+
+    def usage(word: str) -> float:
+        w = word.casefold()
+        return sum(n for t, n in sentences.items() if w in lowered[t])
+
+    ranked = sorted(words, key=lambda w: -usage(w))  # stable: unused words keep the order they were added
+    names = (ranked + learned_names(sentences, {w.casefold() for w in words}))[:MAX_HINT_WORDS]
+    phrases = list(sentences)[:top_phrases]
+
     parts = []
-    if words:
-        parts.append(", ".join(words) + ".")
+    if names:
+        parts.append(", ".join(names) + ".")
     parts.extend(p if p.endswith((".", "?", "!")) else p + "." for p in phrases)
     return " ".join(parts)[:MAX_PROMPT_CHARS]
 
