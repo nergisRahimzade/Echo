@@ -13,6 +13,7 @@ import httpx
 
 from app.config import get_settings
 from app.db import aggregate
+from app.text import normalize
 
 logger = logging.getLogger("echo.asr")
 
@@ -20,6 +21,8 @@ PROVIDERS = {
     "groq": ("https://api.groq.com/openai/v1/audio/transcriptions", "whisper-large-v3"),
     "openai": ("https://api.openai.com/v1/audio/transcriptions", "whisper-1"),
 }
+# Second Groq model for the extra guess: same quality family, separate rate limit.
+ALT_MODEL = "whisper-large-v3-turbo"
 # Whisper's verbose_json reports the language as an English name; we use ISO codes.
 LANGUAGE_CODES = {"turkish": "tr", "english": "en", "arabic": "ar", "spanish": "es", "german": "de"}
 # Whisper only reads the last ~224 tokens of a prompt; keep it comfortably short.
@@ -79,13 +82,16 @@ async def transcribe(
     prompt: str | None = None,
     temperature: float = 0.0,
     client: httpx.AsyncClient | None = None,
+    model: str | None = None,
 ) -> Transcript:
     """One Whisper guess for a WAV file.
 
     language: "tr"/"en" to force a language, or None to auto-detect (mixed-language users).
     prompt:   hint text with words the user is likely to say.
+    model:    override the Whisper model (e.g. the turbo variant).
     """
-    url, model, key = _provider()
+    url, default_model, key = _provider()
+    model = model or default_model
     data = {"model": model, "response_format": "verbose_json", "temperature": str(temperature)}
     if language:
         data["language"] = language
@@ -138,3 +144,47 @@ async def build_prompt(db, user_id: str, top_phrases: int = 10) -> str:
         parts.append(", ".join(words) + ".")
     parts.extend(p if p.endswith((".", "?", "!")) else p + "." for p in phrases)
     return " ".join(parts)[:MAX_PROMPT_CHARS]
+
+
+def _is_hallucination(t: Transcript, prompt: str | None) -> bool:
+    """Whisper sometimes repeats the prompt, or invents text, when it hears no clear speech."""
+    text = normalize(t.text)
+    if not text:
+        return True
+    if prompt and t.prompt_used and len(text) > 8 and text in normalize(prompt):
+        return True
+    return (t.no_speech_prob or 0) > 0.8 and (t.avg_logprob or 0) < -1.0
+
+
+async def get_candidates(wav: Path, language: str | None, prompt: str | None) -> list[Transcript]:
+    """2-3 different Whisper guesses for the same recording, best first, duplicates removed.
+
+    Runs in parallel: with the personal prompt, without it, and with the prompt at
+    temperature 0.4 (a slightly more adventurous guess). On Groq the third guess uses the
+    turbo model, which has its own rate limit (free tier: 20 requests/minute per model).
+    """
+    alt = ALT_MODEL if _provider()[1] == PROVIDERS["groq"][1] else None
+    variants: list[tuple[str | None, float, str | None]] = (
+        [(prompt, 0.0, None), (None, 0.0, None), (prompt, 0.4, alt)] if prompt else [(None, 0.0, None), (None, 0.4, alt)]
+    )
+    async with httpx.AsyncClient(timeout=30) as client:
+        results = await asyncio.gather(
+            *(transcribe(wav, language, p, temp, client=client, model=m) for p, temp, m in variants),
+            return_exceptions=True,
+        )
+    errors = [r for r in results if isinstance(r, Exception)]
+    for err in errors:
+        logger.warning("One Whisper guess failed: %s", err)
+
+    candidates: list[Transcript] = []
+    seen: set[str] = set()
+    for r in results:
+        if isinstance(r, Exception) or _is_hallucination(r, prompt):
+            continue
+        key = normalize(r.text)
+        if key not in seen:
+            seen.add(key)
+            candidates.append(r)
+    if not candidates and len(errors) == len(results):
+        raise ASRError(f"All Whisper guesses failed: {errors[0]}")
+    return candidates
