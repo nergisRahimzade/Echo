@@ -30,3 +30,6 @@ Thumbs.db
 .pytest_cache/
 .coverage
 *.log
+
+# Generated test recordings (make them with backend/scripts/make_test_audio.ps1)
+backend/tests/audio/
