@@ -1,7 +1,8 @@
 # Generates clear test recordings with the built-in Windows voices (no internet needed).
 # Usage (from backend/):  powershell -ExecutionPolicy Bypass -File scripts/make_test_audio.ps1 [-OutDir tests/audio]
 # Each file is named after its language and phrase id; labels.json maps file -> correct text.
-param([string]$OutDir = "tests/audio")
+# One custom sentence:     ... -Text "Pamuk nerede?" -Lang tr -Out pamuk.wav
+param([string]$OutDir = "tests/audio", [string]$Text = "", [string]$Lang = "tr", [string]$Out = "")
 
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Runtime.WindowsRuntime
@@ -15,6 +16,26 @@ function Await($op, [Type]$type) {
 }
 [Windows.Media.SpeechSynthesis.SpeechSynthesizer, Windows.Media.SpeechSynthesis, ContentType = WindowsRuntime] | Out-Null
 [Windows.Storage.Streams.DataReader, Windows.Storage.Streams, ContentType = WindowsRuntime] | Out-Null
+
+function Save-Speech([string]$sentence, [string]$culture, [string]$path) {
+    $voice = [Windows.Media.SpeechSynthesis.SpeechSynthesizer]::AllVoices | Where-Object { $_.Language -eq $culture } | Select-Object -First 1
+    if (-not $voice) { throw "No $culture voice installed" }
+    $s = New-Object Windows.Media.SpeechSynthesis.SpeechSynthesizer
+    $s.Voice = $voice
+    $stream = Await ($s.SynthesizeTextToStreamAsync($sentence)) ([Windows.Media.SpeechSynthesis.SpeechSynthesisStream])
+    $reader = New-Object Windows.Storage.Streams.DataReader($stream.GetInputStreamAt(0))
+    Await ($reader.LoadAsync([uint32]$stream.Size)) ([uint32]) | Out-Null
+    $bytes = New-Object byte[] $stream.Size
+    $reader.ReadBytes($bytes)
+    [IO.File]::WriteAllBytes($path, $bytes)
+}
+
+if ($Text) {
+    $culture = @{ tr = "tr-TR"; en = "en-US" }[$Lang]
+    Save-Speech $Text $culture ([IO.Path]::GetFullPath($Out))
+    Write-Host "wrote $Out"
+    exit 0
+}
 
 $repo = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 New-Item -ItemType Directory -Force $OutDir | Out-Null

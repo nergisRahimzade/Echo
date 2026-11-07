@@ -39,6 +39,10 @@ export interface TranslateResult {
   score: number;
   action: TranslateAction;
   language: Language;
+  attempt: number;
+  reason: string;
+  score_parts: { score: number; agent_confidence: number; candidate_agreement: number; sound_match: number };
+  timings: Record<string, number>;
 }
 
 export interface FeedbackResult {
@@ -177,6 +181,22 @@ export function translate(params: {
   form.append("session_id", params.sessionId);
   form.append("audio", params.audio, audioFileName(params.audio));
   return request("/translate", { method: "POST", body: form });
+}
+
+export interface Turn {
+  speaker: "user" | "other person";
+  text: string;
+}
+
+/** Save what the other person said (typed by a helper) so the agent knows the topic. */
+export function addTurn(userId: string, sessionId: string, text: string): Promise<{ turn_id: string }> {
+  return postJson("/turns", { user_id: userId, session_id: sessionId, text });
+}
+
+export function getTurns(userId: string, sessionId: string, n = 10): Promise<Turn[]> {
+  return request<Turn[]>(
+    `/turns?user_id=${encodeURIComponent(userId)}&session_id=${encodeURIComponent(sessionId)}&n=${n}`,
+  );
 }
 
 export function sendFeedback(params: {
