@@ -17,13 +17,14 @@ import {
 } from "lucide-react";
 import AudioPlayButton from "@/components/AudioPlayButton";
 import Flag from "@/components/Flag";
+import HelpText from "@/components/HelpText";
 import HoldToRecord from "@/components/HoldToRecord";
 import ProgressRing from "@/components/ProgressRing";
 import { useUser } from "@/components/UserGate";
 import { enroll, getPhrases, getSamples, type Language, type Phrase } from "@/lib/api";
 import { preloadVoice, sayAloud, stopVoice } from "@/lib/voice";
 import type { Recording } from "@/lib/useRecorder";
-import { showError, toUiError, useT, type UiError } from "@/lib/i18n";
+import { showError, toUiError, useI18n, type UiError } from "@/lib/i18n";
 
 type Stage = "loading" | "start" | "phrase" | "finished" | "error";
 
@@ -33,7 +34,7 @@ type Stage = "loading" | "start" | "phrase" | "finished" | "error";
  */
 export default function EnrollFlow() {
   const user = useUser();
-  const t = useT();
+  const { t, lang: uiLang } = useI18n(); // uiLang = app language, for the on-screen instructions
   const [lang, setLang] = useState<Language>(user.main_language === "en" ? "en" : "tr");
   const [stage, setStage] = useState<Stage>("loading");
   const [phrases, setPhrases] = useState<Phrase[]>([]);
@@ -193,6 +194,7 @@ export default function EnrollFlow() {
           <IconLink href="/" label={t("common.home")} icon={<House className="h-10 w-10" />} />
           <IconButton onClick={recordAgain} label={t("enroll.recordAllAgain")} icon={<RotateCcw className="h-10 w-10" />} />
         </div>
+        <HelpText text={t("enroll.finishedHelp")} language={uiLang} testId="enroll-finished-help" />
       </div>
     );
   }
@@ -202,6 +204,7 @@ export default function EnrollFlow() {
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
         <h1 className="sr-only">{t("enroll.heading")}</h1>
         {languageSwitch}
+        <HelpText text={t("enroll.intro", { total })} language={uiLang} testId="enroll-intro" />
         <ProgressRing done={doneCount} total={total} size={96} label={t("enroll.progress", { done: doneCount, total })} />
         <div className="flex items-center gap-3 text-muted" aria-hidden>
           <Volume2 className="h-10 w-10" />
@@ -235,6 +238,7 @@ export default function EnrollFlow() {
           small
         />
       </div>
+      <p className="text-center text-muted">{t("enroll.intro", { total })}</p>
 
       {/* The phrase: a big picture, heard aloud. The text is small, for helpers. */}
       <div className="flex w-full items-center justify-center gap-6" data-testid="enroll-phrase" data-phrase-id={phrase.id}>

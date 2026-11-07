@@ -5,6 +5,7 @@ import { AlertTriangle, MessageSquarePlus, Repeat, RotateCcw } from "lucide-reac
 import CheckPanel from "@/components/CheckPanel";
 import CountdownThumbDown from "@/components/CountdownThumbDown";
 import HealthBadge from "@/components/HealthBadge";
+import HelpText from "@/components/HelpText";
 import HelperFix from "@/components/HelperFix";
 import HelperTurnInput from "@/components/HelperTurnInput";
 import HoldToRecord from "@/components/HoldToRecord";
@@ -144,6 +145,8 @@ export default function TalkScreen() {
       <h1 className="sr-only">{t("talk.heading")}</h1>
       {/* Listener area: large text, only ever shows sentences that were said aloud */}
       <section className="flex min-h-48 flex-1 flex-col items-center justify-center gap-6" aria-live="polite">
+        {stage.kind === "idle" && <HelpText text={t("talk.intro")} language={uiLang} testId="talk-intro" />}
+
         {stage.kind === "thinking" && <ThinkingAnimation />}
 
         {stage.kind === "spoken" && (

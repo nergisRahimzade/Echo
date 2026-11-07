@@ -60,7 +60,9 @@
     "addWords": "İsim ve yer ekle",
     "recordAllAgain": "Cümleleri tekrar kaydet",
     "progress": "{total} cümleden {done} tanesi kaydedildi",
-    "heading": "Echo: Echo'ya sesini öğret"
+    "heading": "Echo: Echo'ya sesini öğret",
+    "intro": "Konuşma şeklini öğrenebilmem için bu {total} cümleyi tekrarla",
+    "finishedHelp": "Kullandığın isimleri ve yerleri eklemek için kişiler simgesine bas. Konuşmaya başlamak için ev simgesine bas. Cümleleri tekrar kaydetmek için yenile simgesine bas."
   },
   "words": {
     "title": "İsimler ve yerler",
@@ -100,7 +102,8 @@
     "listenerDialog": "Karşındaki kişi için cümle. Kapatmak için dokun.",
     "flip": "Karşıda oturan biri için ters çevir",
     "learned": "{n} cümle öğrenildi",
-    "heading": "Echo: konuş"
+    "heading": "Echo: konuş",
+    "intro": "Sana yardım edebilmem için mikrofona basılı tutarak konuşmaya başla"
   },
   "settings": {
     "title": "Ayarlar",
