@@ -5,6 +5,7 @@ import { AlertTriangle, MessageSquarePlus, Repeat, RotateCcw } from "lucide-reac
 import CheckPanel from "@/components/CheckPanel";
 import CountdownThumbDown from "@/components/CountdownThumbDown";
 import HealthBadge from "@/components/HealthBadge";
+import HelperFix from "@/components/HelperFix";
 import HelperTurnInput from "@/components/HelperTurnInput";
 import HoldToRecord from "@/components/HoldToRecord";
 import ThinkingAnimation from "@/components/ThinkingAnimation";
@@ -24,6 +25,7 @@ type Stage =
   | { kind: "spoken"; result: TranslateResult; undo: boolean } // said aloud; undo = thumbs-down still offered
   | { kind: "check"; result: TranslateResult; busy: boolean } // played privately, waiting for 👍 / 👎
   | { kind: "repeat"; result: TranslateResult } // wrong guess: say it again
+  | { kind: "helper"; result: TranslateResult } // second wrong guess: a helper types it
   | { kind: "error"; message: string };
 
 /**
@@ -53,6 +55,15 @@ export default function TalkScreen() {
     void playPrompt("sayAgain", result.language);
   }, []);
 
+  /** Second wrong guess in a row: stop guessing, offer the helper. */
+  const callHelper = useCallback((result: TranslateResult) => {
+    setStage({ kind: "helper", result });
+    void playPrompt("helper", result.language);
+  }, []);
+
+  const afterThumbsDown = (result: TranslateResult, nextAction: string) =>
+    nextAction === "helper" ? callHelper(result) : askToRepeat(result);
+
   const onRecorded = useCallback(
     async (rec: Recording) => {
       setStage({ kind: "thinking" });
@@ -70,8 +81,8 @@ export default function TalkScreen() {
   // ----- after Echo spoke on its own -----
   async function flagSpokenAsWrong(result: TranslateResult) {
     try {
-      await sendFeedback({ utteranceId: result.utterance_id, verdict: "down" });
-      askToRepeat(result);
+      const { next_action } = await sendFeedback({ utteranceId: result.utterance_id, verdict: "down" });
+      afterThumbsDown(result, next_action);
     } catch (err) {
       showError(err);
     }
@@ -83,7 +94,7 @@ export default function TalkScreen() {
     try {
       const { next_action } = await sendFeedback({ utteranceId: result.utterance_id, verdict });
       if (next_action === "speak") speakToListener(result, false); // the user approved it: no undo needed
-      else askToRepeat(result);
+      else afterThumbsDown(result, next_action);
     } catch (err) {
       showError(err);
     }
@@ -95,6 +106,16 @@ export default function TalkScreen() {
       await sendFeedback({ utteranceId: result.utterance_id, verdict: "up", auto: true });
     } catch {
       /* the sentence was already said; a missed confirmation only costs one learning example */
+    }
+  }
+
+  /** The helper typed what was meant: save it as a correction, then say it aloud. */
+  async function submitHelperFix(result: TranslateResult, text: string) {
+    try {
+      await sendFeedback({ utteranceId: result.utterance_id, verdict: "down", finalText: text });
+      speakToListener({ ...result, sentence: text }, false);
+    } catch (err) {
+      showError(err);
     }
   }
 
@@ -142,6 +163,8 @@ export default function TalkScreen() {
             </span>
           </div>
         )}
+
+        {stage.kind === "helper" && <HelperFix onSubmit={(text) => submitHelperFix(stage.result, text)} />}
 
         {stage.kind === "error" && (
           <div role="alert" className="flex flex-col items-center gap-3 text-center">
