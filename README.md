@@ -43,3 +43,15 @@ npm run dev
 ```
 
 Then open http://localhost:3000.
+
+## Check how well Echo hears
+
+```bash
+cd backend
+powershell -ExecutionPolicy Bypass -File scripts/make_test_audio.ps1   # clear test recordings (Windows voices)
+python -m scripts.eval_asr tests/audio --enroll-dir tests/audio --limit 10
+```
+
+`eval_asr` runs each labelled recording through Whisper candidates and sound matching and prints a results table
+(best guess, word error rate, whether sound matching found the right sentence, time per file).
+Point it at real recordings by putting audio files and a `labels.json` (`{"file.webm": {"text": "...", "language": "tr"}}`) in a folder.

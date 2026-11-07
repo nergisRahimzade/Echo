@@ -26,3 +26,17 @@ def similarity(a: str, b: str) -> float:
     if not na or not nb:
         return 0.0
     return SequenceMatcher(None, na, nb).ratio()
+
+
+def word_error_rate(reference: str, hypothesis: str) -> float:
+    """Word error rate: (substitutions + deletions + insertions) / words in the reference."""
+    ref, hyp = normalize(reference).split(), normalize(hypothesis).split()
+    if not ref:
+        return 0.0 if not hyp else 1.0
+    prev = list(range(len(hyp) + 1))
+    for i, r in enumerate(ref, 1):
+        cur = [i] + [0] * len(hyp)
+        for j, h in enumerate(hyp, 1):
+            cur[j] = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (r != h))
+        prev = cur
+    return prev[-1] / len(ref)

@@ -70,3 +70,11 @@ def test_normalize_and_similarity():
     assert similarity("Su istiyorum.", "su istiyorum") == 1.0
     assert 0.5 < similarity("Su istiyorum", "Su istiyoruz") < 1.0
     assert similarity("", "abc") == 0.0
+
+
+def test_word_error_rate():
+    from app.text import word_error_rate
+
+    assert word_error_rate("Su istiyorum", "su istiyorum.") == 0.0
+    assert word_error_rate("bir iki üç dört", "bir üç dört beş") == 0.5  # 1 deletion + 1 insertion
+    assert word_error_rate("merhaba", "") == 1.0
