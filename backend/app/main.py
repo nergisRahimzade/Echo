@@ -19,6 +19,11 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    logger = logging.getLogger("echo")
+    if not settings.elevenlabs_api_key:
+        logger.warning("ELEVENLABS_API_KEY not set: the app will use the browser's built-in voice.")
+    if not settings.embedding_api_key:
+        logger.warning("EMBEDDING_API_KEY not set: similar sentences are matched by spelling, not meaning.")
     await db.connect(settings.mongodb_uri, settings.mongodb_db)
     yield
     await db.close()

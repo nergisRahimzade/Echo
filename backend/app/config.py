@@ -1,7 +1,10 @@
-"""All settings and secret keys, loaded from environment variables or backend/.env.
+"""All settings and secret keys, loaded from environment variables or a .env file.
 
+The .env file can live in backend/.env or at the repo root (.env); backend/.env wins.
 Use `get_settings()` anywhere in the backend. If a required key is missing the app
 stops at startup with a message that lists exactly which keys to add.
+Optional keys (ElevenLabs, embeddings) only switch on better features; Echo falls back
+to the browser voice and to text-similarity search without them.
 """
 
 import os
@@ -15,28 +18,35 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 REPO_DIR = BACKEND_DIR.parent
 ENV_FILE = BACKEND_DIR / ".env"
+# Later files win, so backend/.env overrides a root .env.
+ENV_FILES: tuple[Path, ...] = (REPO_DIR / ".env", ENV_FILE)
 
 # Keys that must be present (and not blank) for Echo to run.
 REQUIRED_KEYS = (
     "anthropic_api_key",
-    "elevenlabs_api_key",
     "mongodb_uri",
+)
+# Nice to have: each one switches on a better feature, with a fallback without it.
+OPTIONAL_KEYS = (
+    "openai_api_key",
+    "groq_api_key",
+    "elevenlabs_api_key",
     "embedding_api_key",
 )
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=ENV_FILE, env_file_encoding="utf-8", extra="ignore"
+        env_file=ENV_FILES, env_file_encoding="utf-8", extra="ignore"
     )
 
     # --- Secret keys (from the project brief) ---
     anthropic_api_key: str
     openai_api_key: str | None = None  # Whisper via OpenAI ...
     groq_api_key: str | None = None  # ... or via Groq (one of the two is required)
-    elevenlabs_api_key: str
+    elevenlabs_api_key: str | None = None  # optional: browser voice is the fallback
     mongodb_uri: str
-    embedding_api_key: str
+    embedding_api_key: str | None = None  # optional: text-similarity search is the fallback
 
     # --- Normal settings (safe defaults) ---
     mongodb_db: str = "echo"
@@ -45,7 +55,7 @@ class Settings(BaseSettings):
     uploads_dir: Path = REPO_DIR / "uploads"  # audio files: uploads/{user_id}/{sample_id}.webm
     max_upload_mb: float = 10.0
 
-    @field_validator(*REQUIRED_KEYS, "openai_api_key", "groq_api_key", mode="before")
+    @field_validator(*REQUIRED_KEYS, *OPTIONAL_KEYS, mode="before")
     @classmethod
     def blank_means_missing(cls, value):
         """Treat `KEY=` (empty, copied from .env.example) the same as not set."""
@@ -71,16 +81,25 @@ class MissingSettingsError(RuntimeError):
 WHISPER_KEY_MESSAGE = "OPENAI_API_KEY or GROQ_API_KEY (one is needed for Whisper)"
 
 
-def _whisper_key_missing(env_file: Path | None) -> bool:
-    """Pydantic skips the Whisper check when other keys already failed, so check it directly."""
+def read_env_values(env_files: tuple[Path, ...] | Path | None = ENV_FILES) -> dict[str, str | None]:
+    """Raw key/values from the .env file(s) plus the real environment (environment wins)."""
+    if isinstance(env_files, Path):
+        env_files = (env_files,)
     values: dict[str, str | None] = {}
-    if env_file and Path(env_file).exists():
-        values.update({k.upper(): v for k, v in dotenv_values(env_file).items()})
+    for f in env_files or ():
+        if f.exists():
+            values.update({k.upper(): v for k, v in dotenv_values(f).items()})
     values.update({k.upper(): v for k, v in os.environ.items()})
+    return values
+
+
+def _whisper_key_missing(env_files) -> bool:
+    """Pydantic skips the Whisper check when other keys already failed, so check it directly."""
+    values = read_env_values(env_files)
     return not any((values.get(k) or "").strip() for k in ("OPENAI_API_KEY", "GROQ_API_KEY"))
 
 
-def _friendly_error(exc: ValidationError, env_file: Path | None) -> MissingSettingsError:
+def _friendly_error(exc: ValidationError, env_file) -> MissingSettingsError:
     problems = []
     for err in exc.errors():
         if err["loc"]:
@@ -98,7 +117,7 @@ def _friendly_error(exc: ValidationError, env_file: Path | None) -> MissingSetti
     )
 
 
-def load_settings(env_file: Path | None = ENV_FILE) -> Settings:
+def load_settings(env_file: tuple[Path, ...] | Path | None = ENV_FILES) -> Settings:
     """Read settings fresh. Pass env_file=None to use only real environment variables."""
     try:
         return Settings(_env_file=env_file)

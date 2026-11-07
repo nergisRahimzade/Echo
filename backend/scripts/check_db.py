@@ -6,17 +6,14 @@ creates the collections + indexes, and prints what it finds.
 """
 
 import asyncio
-import os
 import sys
 
-from dotenv import dotenv_values
-
 from app import db
-from app.config import ENV_FILE
+from app.config import ENV_FILE, read_env_values
 
 
 async def main() -> int:
-    values = {**dotenv_values(ENV_FILE), **os.environ}
+    values = read_env_values()
     uri = (values.get("MONGODB_URI") or "").strip()
     name = (values.get("MONGODB_DB") or "echo").strip()
     if not uri:

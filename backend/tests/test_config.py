@@ -14,13 +14,30 @@ def test_loads_when_all_keys_present():
 
 def test_missing_key_gives_clear_message(monkeypatch):
     monkeypatch.delenv("ANTHROPIC_API_KEY")
-    monkeypatch.setenv("ELEVENLABS_API_KEY", "   ")  # blank also counts as missing
+    monkeypatch.setenv("MONGODB_URI", "   ")  # blank also counts as missing
     with pytest.raises(MissingSettingsError) as info:
         load_settings(env_file=None)
     message = str(info.value)
     assert "ANTHROPIC_API_KEY" in message
-    assert "ELEVENLABS_API_KEY" in message
+    assert "MONGODB_URI" in message
     assert ".env.example" in message
+
+
+def test_optional_keys_can_be_missing(monkeypatch):
+    monkeypatch.delenv("ELEVENLABS_API_KEY")
+    monkeypatch.setenv("EMBEDDING_API_KEY", "")
+    s = load_settings(env_file=None)
+    assert s.elevenlabs_api_key is None and s.embedding_api_key is None
+
+
+def test_backend_env_overrides_root_env(tmp_path, monkeypatch):
+    monkeypatch.delenv("MONGODB_DB")
+    root, backend = tmp_path / "root.env", tmp_path / "backend.env"
+    root.write_text("MONGODB_DB=from_root\nELEVENLABS_API_KEY=root-key\n")
+    backend.write_text("MONGODB_DB=from_backend\n")
+    s = load_settings(env_file=(root, backend))
+    assert s.mongodb_db == "from_backend"
+    assert s.elevenlabs_api_key == "test-elevenlabs"  # real environment beats both files
 
 
 def test_all_problems_listed_together(monkeypatch):
