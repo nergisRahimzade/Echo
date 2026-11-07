@@ -81,6 +81,11 @@ Open `/demo`, or tap "Try the demo account" on the welcome screen.
 | Environment | `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, `MONGODB_URI`, `ELEVENLABS_API_KEY`, `PYTHON_VERSION=3.14`, `FRONTEND_URL=https://<website>.onrender.com` | `NEXT_PUBLIC_API_URL=https://<api>.onrender.com` |
 
 - MongoDB Atlas > Network Access must allow `0.0.0.0/0`: Render has no fixed IP address.
+- Region: **Oregon** for both services. The Atlas cluster runs in AWS us-west-2 (Oregon), so every database call stays local.
+- Deploys come from `main` (auto-deploy on every push).
+- The website build stops with a clear error if `NEXT_PUBLIC_API_URL` is missing; the API logs a warning if `FRONTEND_URL` is missing.
+- Phones need HTTPS for the microphone. Render gives every service an `https://….onrender.com` address.
+- Free services sleep after ~15 minutes idle; the first request then takes ~1 minute. Open the API's `/health` before a demo.
 - `FRONTEND_URL` is the CORS allow-list (comma-separated for several sites).
 - `NEXT_PUBLIC_API_URL` is baked in at build time: redeploy the website after changing it.
 - ffmpeg comes from the `imageio-ffmpeg` package, so nothing extra needs installing.

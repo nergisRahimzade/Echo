@@ -1,6 +1,7 @@
 """Echo backend: the FastAPI app that runs speech recognition, the agent and memory."""
 
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -25,6 +26,9 @@ async def lifespan(_: FastAPI):
         logger.warning("ELEVENLABS_API_KEY not set: the app will use the browser's built-in voice.")
     if not settings.embedding_api_key:
         logger.warning("EMBEDDING_API_KEY not set: similar sentences are matched by spelling, not meaning.")
+    if os.environ.get("RENDER") and all("localhost" in o for o in settings.frontend_origins):
+        logger.warning("FRONTEND_URL is not set: browsers on the website will be blocked (CORS). "
+                       "Set FRONTEND_URL to the website's address, e.g. https://echo-web.onrender.com")
     await db.connect(settings.mongodb_uri, settings.mongodb_db)
     yield
     await close_shared_client()
