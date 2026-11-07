@@ -7,7 +7,7 @@ words and most-used approved phrases, so Whisper expects *their* vocabulary.
 import asyncio
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import httpx
@@ -42,6 +42,21 @@ class Transcript:
     no_speech_prob: float | None = None
     prompt_used: bool = False
     temperature: float = 0.0
+    forced_language: str | None = None  # the language Whisper was told to use (None = auto-detect)
+    # Every reading that produced this same text, e.g. ["tr", "en", "auto:en"] (filled when merging).
+    readings: list[str] = field(default_factory=list)
+
+    @property
+    def reading(self) -> str:
+        return self.forced_language or f"auto:{self.language}"
+
+    @property
+    def certainty(self) -> str:
+        """Whisper's own certainty in plain words, for the agent."""
+        lp = self.avg_logprob
+        if lp is None:
+            return "unknown"
+        return "high" if lp > -0.35 else "medium" if lp > -0.7 else "low"
 
 
 _shared: httpx.AsyncClient | None = None
@@ -81,7 +96,7 @@ def _language_code(name: str | None) -> str | None:
     return name if len(name) == 2 else LANGUAGE_CODES.get(name, name)
 
 
-def _parse(body: dict, prompt_used: bool, temperature: float) -> Transcript:
+def _parse(body: dict, prompt_used: bool, temperature: float, forced_language: str | None = None) -> Transcript:
     segments = body.get("segments") or []
     logprobs = [s["avg_logprob"] for s in segments if s.get("avg_logprob") is not None]
     no_speech = [s["no_speech_prob"] for s in segments if s.get("no_speech_prob") is not None]
@@ -92,6 +107,7 @@ def _parse(body: dict, prompt_used: bool, temperature: float) -> Transcript:
         no_speech_prob=max(no_speech) if no_speech else None,
         prompt_used=prompt_used,
         temperature=temperature,
+        forced_language=forced_language,
     )
 
 
@@ -141,7 +157,7 @@ async def transcribe(
                     continue
             if res.status_code != 200:
                 raise ASRError(f"Whisper error {res.status_code}: {res.text[:300]}")
-            return _parse(res.json(), prompt_used=bool(prompt), temperature=temperature)
+            return _parse(res.json(), prompt_used=bool(prompt), temperature=temperature, forced_language=language)
         raise ASRError("Whisper kept failing after retries.")
     finally:
         if own_client:
@@ -206,30 +222,47 @@ async def build_prompt(db, user_id: str, top_phrases: int = 10) -> str:
     return " ".join(parts)[:MAX_PROMPT_CHARS]
 
 
+# Lines Whisper is known to invent from its training data (subtitle credits, video outros).
+KNOWN_HALLUCINATIONS = {
+    "altyazı m k", "altyazı", "izlediğiniz için teşekkürler", "abone olmayı unutmayın",
+    "thanks for watching", "thank you for watching", "subtitles by the amara org community",
+    "please subscribe",
+}
+
+
 def _is_hallucination(t: Transcript, prompt: str | None) -> bool:
     """Whisper sometimes repeats the prompt, or invents text, when it hears no clear speech."""
     text = normalize(t.text)
-    if not text:
+    if not text or text in KNOWN_HALLUCINATIONS:
         return True
     if prompt and t.prompt_used and len(text) > 8 and text in normalize(prompt):
         return True
     return (t.no_speech_prob or 0) > 0.8 and (t.avg_logprob or 0) < -1.0
 
 
-async def get_candidates(wav: Path, language: str | None, prompt: str | None) -> list[Transcript]:
+async def get_candidates(
+    wav: Path, language: str | None, prompt: str | None, languages: list[str] | None = None
+) -> list[Transcript]:
     """2-3 different Whisper guesses for the same recording, best first, duplicates removed.
 
-    Runs in parallel: with the personal prompt, without it, and with the prompt at
-    temperature 0.4 (a slightly more adventurous guess). On Groq the third guess uses the
-    turbo model, which has its own rate limit (free tier: 20 requests/minute per model).
+    One language: run in parallel with the personal prompt, without it, and with the prompt at
+    temperature 0.4 (a slightly more adventurous guess).
+    Mixed-language user (language=None, languages=["tr", "en"]): one reading forced to each of
+    their languages plus one auto-detected, because auto-detect alone misfires on short words
+    (measured: "Hayır" heard as English "Please.", "Merhaba" as Chinese).
+    On Groq the third guess uses the turbo model, which has its own rate limit.
     """
     alt = ALT_MODEL if _provider()[1] == PROVIDERS["groq"][1] else None
-    variants: list[tuple[str | None, float, str | None]] = (
-        [(prompt, 0.0, None), (None, 0.0, None), (prompt, 0.4, alt)] if prompt else [(None, 0.0, None), (None, 0.4, alt)]
-    )
+    variants: list[tuple[str | None, float, str | None, str | None]]  # prompt, temperature, model, language
+    if language is None and languages:
+        variants = [(prompt, 0.0, None, lang) for lang in languages[:2]] + [(None, 0.0, alt, None)]
+    elif prompt:
+        variants = [(prompt, 0.0, None, language), (None, 0.0, None, language), (prompt, 0.4, alt, language)]
+    else:
+        variants = [(None, 0.0, None, language), (None, 0.4, alt, language)]
     client = shared_client()
     results = await asyncio.gather(
-        *(transcribe(wav, language, p, temp, client=client, model=m) for p, temp, m in variants),
+        *(transcribe(wav, lang, p, temp, client=client, model=m) for p, temp, m, lang in variants),
         return_exceptions=True,
     )
     errors = [r for r in results if isinstance(r, Exception)]
@@ -237,13 +270,19 @@ async def get_candidates(wav: Path, language: str | None, prompt: str | None) ->
         logger.warning("One Whisper guess failed: %s", err)
 
     candidates: list[Transcript] = []
-    seen: set[str] = set()
+    by_text: dict[str, Transcript] = {}
     for r in results:
         if isinstance(r, Exception) or _is_hallucination(r, prompt):
             continue
+        if languages and r.forced_language is None and r.language not in languages:
+            continue  # auto-detect picked a language this user doesn't speak (e.g. Chinese for "Merhaba")
         key = normalize(r.text)
-        if key not in seen:
-            seen.add(key)
+        if key in by_text:
+            # Same words from another reading: remember it (it matters which languages agree).
+            by_text[key].readings.append(r.reading)
+        else:
+            r.readings = [r.reading]
+            by_text[key] = r
             candidates.append(r)
     if not candidates and len(errors) == len(results):
         raise ASRError(f"All Whisper guesses failed: {errors[0]}")

@@ -30,7 +30,14 @@ Rules:
 feelings, politeness or detail that is not supported by the transcripts or sound matches.
 2. Keep their words and style: their vocabulary, how formal they are, their humour. Fix only \
 what makes it unclear (misheard sounds, broken words). Short stays short.
-3. Reply in the language they spoke. If they mixed Turkish and English, keep the mix.
+3. Reply in the language they spoke. If they mixed Turkish and English, keep the mix. For \
+someone who speaks both, each transcript says which readings produced it ("read as Turkish", \
+"read as English", "auto-detected English"). A reading forced into the wrong language often \
+comes back TRANSLATED, in either direction (Turkish "Yorgunum" read as English gives "I'm \
+tired"; English "Where are we going?" read as Turkish gives "Nereye gidiyoruz?"). So first \
+decide which language they actually spoke: the transcript produced by more readings, \
+especially the auto-detected one, with the higher certainty, is the language they spoke; the \
+other one is a translation, ignore it. Then answer only in that language. Never translate.
 4. Always return exactly ONE sentence: the single most likely meaning. Never a list of \
 options, never "maybe X or Y", never a question back to them.
 5. Prefer a strong sound match or a sentence they often say when the transcripts are garbled \
@@ -90,7 +97,7 @@ OUTPUT_SCHEMA = {
 
 
 def build_user_message(
-    candidates: list[str],
+    candidates: list[str] | list[tuple[str, str]],
     sound_matches: list[tuple[str, float]] | list[tuple[str, float, bool]],
     language_hint: str | None,
     personal_words: list[tuple[str, str]] | None = None,
@@ -100,7 +107,8 @@ def build_user_message(
     """Everything that varies per recording, as plain labelled text."""
     lines = []
     if candidates:
-        lines.append("Transcripts: " + " | ".join(f'"{c}"' for c in candidates))
+        shown = [f'{c[1]} "{c[0]}"' if isinstance(c, tuple) else f'"{c}"' for c in candidates]
+        lines.append("Transcripts: " + " | ".join(shown))
     else:
         lines.append("Transcripts: (the recognizer heard nothing clear)")
     if sound_matches:

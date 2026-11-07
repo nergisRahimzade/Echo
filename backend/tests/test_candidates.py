@@ -14,6 +14,7 @@ def fake_transcribe(replies):
 
     async def _fake(wav, language=None, prompt=None, temperature=0.0, client=None, model=None):
         calls.append((bool(prompt), temperature))
+        _fake.languages.append(language)
         models.append(model)
         reply = replies[(bool(prompt), temperature)]
         if isinstance(reply, Exception):
@@ -21,6 +22,7 @@ def fake_transcribe(replies):
         return Transcript(text=reply, language=language or "tr", prompt_used=bool(prompt), temperature=temperature)
 
     _fake.models = models
+    _fake.languages = []
     return _fake, calls
 
 
@@ -78,3 +80,45 @@ def test_word_error_rate():
     assert word_error_rate("Su istiyorum", "su istiyorum.") == 0.0
     assert word_error_rate("bir iki üç dört", "bir üç dört beş") == 0.5  # 1 deletion + 1 insertion
     assert word_error_rate("merhaba", "") == 1.0
+
+
+
+def test_mixed_language_user_gets_one_reading_per_language_plus_auto(monkeypatch):
+    seen = []
+
+    async def fake(wav, language=None, prompt=None, temperature=0.0, client=None, model=None):
+        seen.append(language)
+        text = {"tr": "Merhaba", "en": "Bad Hubba", None: "大家好吧"}[language]
+        detected = language or "chinese"
+        return Transcript(text=text, language=detected, forced_language=language)
+
+    monkeypatch.setattr(asr, "transcribe", fake)
+    cands = asyncio.run(asr.get_candidates("x.wav", None, "Zeynep.", languages=["tr", "en"]))
+    assert sorted(seen, key=str) == sorted(["tr", "en", None], key=str)
+    # the auto-detected Chinese reading is dropped: this user speaks Turkish and English
+    assert [(c.text, c.forced_language) for c in cands] == [("Merhaba", "tr"), ("Bad Hubba", "en")]
+
+
+def test_known_whisper_hallucinations_are_dropped(monkeypatch):
+    cands, _ = run(monkeypatch, {(True, 0.0): "Altyazı M.K.", (False, 0.0): "Hayır", (True, 0.4): "Thanks for watching!"})
+    assert [c.text for c in cands] == ["Hayır"]
+
+
+def test_certainty_words():
+    assert Transcript(text="x", language="tr", avg_logprob=-0.2).certainty == "high"
+    assert Transcript(text="x", language="tr", avg_logprob=-0.5).certainty == "medium"
+    assert Transcript(text="x", language="tr", avg_logprob=-1.2).certainty == "low"
+
+
+
+def test_identical_readings_are_merged_but_remembered(monkeypatch):
+    async def fake(wav, language=None, prompt=None, temperature=0.0, client=None, model=None):
+        return Transcript(text="I am tired.", language=language or "en", forced_language=language)
+
+    monkeypatch.setattr(asr, "transcribe", fake)
+    [cand] = asyncio.run(asr.get_candidates("x.wav", None, None, languages=["tr", "en"]))
+    assert cand.readings == ["tr", "en", "auto:en"]
+
+    from app.services.translate import describe_readings
+
+    assert describe_readings(cand).startswith("[read as Turkish, read as English, auto-detected English;")

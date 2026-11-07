@@ -25,6 +25,21 @@ from app.services.voiceprint import Voiceprint, fingerprint_upload
 
 logger = logging.getLogger("echo.translate")
 
+# A "both" user's languages, and how they are named to the agent.
+MIXED_LANGUAGES = ["tr", "en"]
+LANGUAGE_NAMES = {"tr": "Turkish", "en": "English"}
+
+
+def describe_readings(c: Transcript) -> str:
+    """e.g. '[read as Turkish, read as English, auto-detected English; certainty high]'."""
+    parts = []
+    for r in c.readings or [c.reading]:
+        if r.startswith("auto:"):
+            parts.append(f"auto-detected {LANGUAGE_NAMES.get(r[5:], r[5:])}")
+        else:
+            parts.append(f"read as {LANGUAGE_NAMES.get(r, r)}")
+    return f"[{', '.join(parts)}; certainty {c.certainty}]"
+
 # Guesses the user rejected this recently in the same conversation are shown as "not this".
 REJECTED_WINDOW = timedelta(minutes=3)
 
@@ -106,7 +121,12 @@ async def translate(db, user: dict, session_id: str, audio_path: str) -> dict:
 
     async def candidates_task() -> list[Transcript]:
         try:
-            return await get_candidates(Path(wav), _whisper_language(main_language), prompt or None)
+            return await get_candidates(
+                Path(wav),
+                _whisper_language(main_language),
+                prompt or None,
+                languages=MIXED_LANGUAGES if main_language == "both" else None,
+            )
         except ASRError as exc:
             logger.error("Whisper failed: %s", exc)
             return []
@@ -123,10 +143,16 @@ async def translate(db, user: dict, session_id: str, audio_path: str) -> dict:
 
     cand_texts = [c.text for c in candidates]
     match_pairs = [(m.text, m.score) for m in matches]
+    # Mixed-language users: tell the agent which language each reading was forced into.
+    agent_candidates = (
+        [(c.text, describe_readings(c)) for c in candidates]
+        if main_language == "both"
+        else cand_texts
+    )
     try:
         result = await interpret(
             ctx,
-            cand_texts,
+            agent_candidates,
             [(m.text, m.score, m.corrected) for m in matches],
             main_language,
             personal_words=[(w["word"], w["kind"]) for w in words],

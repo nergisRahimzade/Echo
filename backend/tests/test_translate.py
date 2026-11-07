@@ -14,10 +14,11 @@ def fake_ai(monkeypatch):
     """Replace Whisper and Claude with controllable fakes."""
     state = {"candidates": ["Su istiyorum.", "Su istiyorum"], "agent": AgentResult(sentence="Su istiyorum.", confidence=0.9, language="tr", reason="agree"), "seen": {}}
 
-    async def fake_candidates(wav, language, prompt):
+    async def fake_candidates(wav, language, prompt, languages=None):
         state["seen"]["whisper_language"] = language
+        state["seen"]["whisper_languages"] = languages
         state["seen"]["prompt"] = prompt
-        return [Transcript(text=t, language="tr") for t in state["candidates"]]
+        return [Transcript(text=t, language="tr", forced_language=(languages or [language])[i % len(languages or [language])]) for i, t in enumerate(state["candidates"])]
 
     async def fake_interpret(ctx, candidates, matches, language_hint, **kw):
         state["seen"]["agent_input"] = {"candidates": candidates, "matches": matches, **kw}
@@ -95,8 +96,13 @@ def test_attempt_counts_and_rejections_are_passed(client, user_id, fake_db, fake
 def test_mixed_language_user_gets_auto_detect(client, fake_ai):
     uid = client.post("/users", json={"name": "M", "main_language": "both", "consent": True}).json()["user_id"]
     fake_ai["agent"] = AgentResult(sentence="Bugün çok happy.", confidence=0.8, language="mixed", reason="mix")
+    fake_ai["candidates"] = ["Bugün çok happy.", "Today I am very happy."]
     body = send(client, uid).json()
-    assert fake_ai["seen"]["whisper_language"] is None
+    assert fake_ai["seen"]["whisper_language"] is None and fake_ai["seen"]["whisper_languages"] == ["tr", "en"]
+    # the agent sees which language each reading was forced into
+    shown = fake_ai["seen"]["agent_input"]["candidates"]
+    assert shown[0][0] == "Bugün çok happy." and shown[0][1].startswith("[read as Turkish")
+    assert shown[1][1].startswith("[read as English")
     assert body["language"] == "tr"  # voice picked from what Whisper detected
 
 
