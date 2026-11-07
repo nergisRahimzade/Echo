@@ -5,7 +5,6 @@ Other modules get collections with `get_db()["users"]` etc.
 """
 
 import logging
-import os
 
 from pymongo import ASCENDING, DESCENDING, AsyncMongoClient
 from pymongo.asynchronous.database import AsyncDatabase
@@ -25,15 +24,13 @@ _client: AsyncMongoClient | None = None
 _db: AsyncDatabase | None = None
 
 
-async def connect(uri: str | None = None, db_name: str | None = None) -> None:
+async def connect(uri: str | None, db_name: str = "echo") -> None:
     """Open the connection and make sure every collection and index exists.
 
     Never raises: if the database is unreachable the server still starts,
     and /health reports the problem.
     """
     global _client, _db
-    uri = uri or os.getenv("MONGODB_URI")
-    db_name = db_name or os.getenv("MONGODB_DB", "echo")
     if not uri:
         logger.warning("MONGODB_URI is not set; running without a database.")
         return

@@ -23,11 +23,16 @@ docs/       Project brief and build tasks
 cd backend
 python -m venv .venv
 .venv/Scripts/activate        # Windows (macOS/Linux: source .venv/bin/activate)
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
+cp .env.example .env          # then fill in every key
+python -m scripts.check_db    # optional: test only the MongoDB connection
 uvicorn app.main:app --reload
 ```
 
-Then open http://localhost:8000/health. It should return `{"status": "ok"}`.
+Then open http://localhost:8000/health. It should return `{"status": "ok", "db": "connected"}`.
+If a key is missing, the server refuses to start and lists exactly which keys to add.
+
+Run the tests: `python -m pytest`
 
 ## Run the frontend
 

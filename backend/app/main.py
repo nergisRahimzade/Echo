@@ -1,20 +1,23 @@
 """Echo backend: the FastAPI app that runs speech recognition, the agent and memory."""
 
 import logging
-import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import db
+from app.config import get_settings
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+
+# Fails right here, with a clear list of missing keys, if backend/.env is incomplete.
+settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    await db.connect()
+    await db.connect(settings.mongodb_uri, settings.mongodb_db)
     yield
     await db.close()
 
@@ -22,12 +25,9 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="Echo API", version="0.1.0", lifespan=lifespan)
 
 # The frontend runs on a different port/domain, so the browser needs CORS permission.
-# Comma-separated list, e.g. "http://localhost:3000,https://echo.vercel.app".
-frontend_origins = os.getenv("FRONTEND_URL", "http://localhost:3000").split(",")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in frontend_origins],
+    allow_origins=settings.frontend_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
