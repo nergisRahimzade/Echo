@@ -51,4 +51,8 @@ async def approve_unanswered_spoken(db, user_id: str) -> int:
         if result.modified_count:
             count += 1
             await on_approved(db, {**utt, **update})
+    if count:
+        from app.services import threshold  # local import: threshold <-> learning are siblings
+
+        await threshold.maybe_tune(db, user_id)
     return count

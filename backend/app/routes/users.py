@@ -37,12 +37,19 @@ class CreateUser(BaseModel):
         return v
 
 
+class ThresholdChange(BaseModel):
+    at: datetime
+    to: float
+    reason: str
+
+
 class UserOut(BaseModel):
     user_id: str
     name: str
     main_language: str
     threshold: float
     created_at: datetime
+    threshold_history: list[ThresholdChange] = []
 
 
 @router.post("/users", status_code=201)
@@ -75,4 +82,7 @@ async def get_user(user_id: str) -> UserOut:
         main_language=user["main_language"],
         threshold=user["threshold"],
         created_at=user["created_at"],
+        threshold_history=[
+            ThresholdChange(at=c["at"], to=c["to"], reason=c["reason"]) for c in user.get("threshold_history", [])[-5:]
+        ],
     )

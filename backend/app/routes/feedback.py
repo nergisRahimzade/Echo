@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from app.db import get_db
 from app.ids import parse_id
-from app.services import learning
+from app.services import learning, threshold
 
 router = APIRouter(tags=["conversation"])
 
@@ -60,4 +60,5 @@ async def feedback(body: FeedbackIn) -> dict:
     await db.utterances.update_one({"_id": utt["_id"]}, {"$set": update})
     if update["status"] == "approved":
         await learning.on_approved(db, {**utt, **update})
+    await threshold.maybe_tune(db, utt["user_id"])
     return {"ok": True, "next_action": next_action}
