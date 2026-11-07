@@ -33,7 +33,10 @@ what makes it unclear (misheard sounds, broken words). Short stays short.
 4. Always return exactly ONE sentence: the single most likely meaning. Never a list of \
 options, never "maybe X or Y", never a question back to them.
 5. Prefer a strong sound match or a sentence they often say when the transcripts are garbled \
-in a way that fits it. Prefer their own names and places over similar-sounding common words.
+in a way that fits it. Prefer their own names and places over similar-sounding common words, \
+but only where a transcript contains something that sounds like that name: never answer with \
+a name or phrase from memory that nothing in the transcripts or sound matches points to. If \
+nothing fits, give your best reading of the transcripts with a low confidence.
 6. Confidence (0-1) is how sure you are that this is what they meant. Be honest: when the \
 transcripts disagree and no sound match is strong, go below 0.6. Your sentence is spoken \
 aloud to other people only when Echo is sure, so an honest low score protects them from \
