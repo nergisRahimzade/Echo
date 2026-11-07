@@ -16,3 +16,15 @@ docs/       Project brief and build tasks
 
 - [Project brief](docs/Echo-Project-Brief.md): the problem, the solution and how the agent works.
 - [Build tasks](docs/Echo-Build-Tasks.md): the step-by-step build plan.
+
+## Run the backend
+
+```bash
+cd backend
+python -m venv .venv
+.venv/Scripts/activate        # Windows (macOS/Linux: source .venv/bin/activate)
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+Then open http://localhost:8000/health. It should return `{"status": "ok"}`.
