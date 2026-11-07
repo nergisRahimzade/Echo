@@ -66,6 +66,13 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
+/* Keyboard and switch-access users must always see where they are: one thick, high-contrast
+   ring on every interactive element (mouse and touch users never see it). */
+:where(button, a, input, textarea, [role="radio"], [role="checkbox"], [tabindex]):focus-visible {
+  outline: 4px solid var(--primary);
+  outline-offset: 3px;
+}
+
 /* Long-press on a phone must not open the text-selection or context menu on our buttons. */
 button {
   -webkit-touch-callout: none;

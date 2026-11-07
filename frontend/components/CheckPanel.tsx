@@ -35,6 +35,8 @@ export default function CheckPanel({
         type="button"
         onClick={replay}
         disabled={busy}
+        // Keyboard / switch users land on "hear it again", never straight on yes or no.
+        autoFocus
         aria-label={t("talk.hearGuess")}
         className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-primary text-primary transition active:scale-95 disabled:opacity-50"
       >

@@ -66,6 +66,7 @@ export default function HoldToRecord({
     }
   };
 
+  const modeWord = mode === "hold" ? t("recorder.modeHold") : t("recorder.modeTap");
   const busy = status === "starting";
   const blocked = disabled || status === "denied" || status === "unsupported";
 
@@ -174,12 +175,13 @@ export default function HoldToRecord({
           type="button"
           onClick={toggleMode}
           disabled={isRecording}
-          aria-label={mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}
+          // The accessible name starts with the visible word, so voice control ("tap Hold") works.
+          aria-label={`${modeWord}: ${mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}`}
           title={mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}
           className="flex min-h-16 min-w-16 items-center justify-center gap-2 rounded-2xl border-2 border-border bg-surface px-4 text-lg transition active:scale-95 disabled:opacity-40"
         >
           {mode === "hold" ? <Hand aria-hidden className="h-8 w-8" /> : <Pointer aria-hidden className="h-8 w-8" />}
-          <span className="text-muted">{mode === "hold" ? t("recorder.modeHold") : t("recorder.modeTap")}</span>
+          <span className="text-muted">{modeWord}</span>
         </button>
       )}
     </div>

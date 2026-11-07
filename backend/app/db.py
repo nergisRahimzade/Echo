@@ -54,9 +54,17 @@ async def ensure_schema(db: AsyncDatabase) -> None:
             await db.create_collection(name)
 
     # Almost every query is "things that belong to this user".
-    for name in COLLECTIONS[1:]:
+    for name in ("enrollment_samples", "personal_words", "utterances"):
         await db[name].create_index([("user_id", ASCENDING)])
 
+    # One style profile per user. (An older version created a plain index with the same
+    # auto-generated name "user_id_1"; real MongoDB refuses to redefine it, so replace it.)
+    cursor = db.style_profiles.list_indexes()
+    if inspect.isawaitable(cursor):  # real PyMongo async: await for the cursor; test double: already one
+        cursor = await cursor
+    indexes = {i["name"]: i async for i in cursor}
+    if "user_id_1" in indexes and not indexes["user_id_1"].get("unique"):
+        await db.style_profiles.drop_index("user_id_1")
     await db.style_profiles.create_index([("user_id", ASCENDING)], unique=True)
     # "key" is the case-folded word, so "Zeynep" and "zeynep" are one entry.
     await db.personal_words.create_index(
