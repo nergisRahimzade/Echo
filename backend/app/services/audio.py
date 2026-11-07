@@ -17,8 +17,9 @@ from starlette.concurrency import run_in_threadpool
 SAMPLE_RATE = 16_000
 # Quieter than this counts as silence. Dysarthric speech can be soft, so keep it low.
 SILENCE_DB = -45
-# Keep a little silence around the speech so soft first/last sounds are not clipped.
-PAD_MS = 150
+# Keep silence around the speech: Whisper tends to drop a first word that starts right at
+# the beginning of the audio (measured: 150 ms lost words, 300+ ms did not).
+PAD_MS = 400
 
 
 class AudioError(RuntimeError):

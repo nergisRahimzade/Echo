@@ -4,6 +4,7 @@ Uses PyMongo's built-in async client (the successor to the deprecated Motor driv
 Other modules get collections with `get_db()["users"]` etc.
 """
 
+import inspect
 import logging
 
 from pymongo import ASCENDING, DESCENDING, AsyncMongoClient
@@ -101,3 +102,15 @@ def set_db(database: AsyncDatabase | None) -> None:
     """Swap in a database directly (used by tests with an in-memory fake)."""
     global _db
     _db = database
+
+
+async def aggregate(collection, pipeline: list[dict]) -> list[dict]:
+    """Run an aggregation and return all results.
+
+    (PyMongo's async aggregate() must be awaited to get the cursor; the in-memory test
+    double returns the cursor directly. This works with both.)
+    """
+    cursor = collection.aggregate(pipeline)
+    if inspect.isawaitable(cursor):
+        cursor = await cursor
+    return [doc async for doc in cursor]

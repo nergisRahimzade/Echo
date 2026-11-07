@@ -30,8 +30,7 @@ def test_webm_becomes_16k_mono_wav_with_silence_trimmed(tmp_path):
         assert w.getframerate() == SAMPLE_RATE
         assert w.getnchannels() == 1
         assert w.getsampwidth() == 2
-    # 3 s in, 1 s tone + 2 x 0.15 s padding out
-    assert 1.1 < wav_duration(out) < 1.6
+    assert 1.6 < wav_duration(out) < 2.1  # 3 s in; out: 1 s tone + 2 x 0.4 s padding
     samples = load_wav(out)
     assert samples.dtype == np.float32 and np.abs(samples).max() > 0.3
 

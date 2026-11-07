@@ -54,6 +54,7 @@ class Settings(BaseSettings):
     phrases_dir: Path = REPO_DIR / "phrases"  # enrollment phrase lists (tr.json, en.json)
     uploads_dir: Path = REPO_DIR / "uploads"  # audio files: uploads/{user_id}/{sample_id}.webm
     max_upload_mb: float = 10.0
+    whisper_model: str | None = None  # default: whisper-large-v3 on Groq, whisper-1 on OpenAI
 
     @field_validator(*REQUIRED_KEYS, *OPTIONAL_KEYS, mode="before")
     @classmethod
