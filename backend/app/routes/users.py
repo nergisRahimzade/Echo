@@ -86,3 +86,29 @@ async def get_user(user_id: str) -> UserOut:
             ThresholdChange(at=c["at"], to=c["to"], reason=c["reason"]) for c in user.get("threshold_history", [])[-5:]
         ],
     )
+
+
+# The progress ring fills toward the next milestone, then starts on the next one.
+MILESTONES = [10, 25, 50, 100, 200, 500, 1000]
+
+
+@router.get("/users/{user_id}/progress")
+async def progress(user_id: str) -> dict:
+    """How much Echo has learned about this user (for the progress ring and helpers)."""
+    db = get_db()
+    user = await require_user(db, user_id)
+    learned = await db.utterances.count_documents({"user_id": user_id, "speaker": "user", "status": "approved"})
+    corrected = await db.utterances.count_documents({"user_id": user_id, "status": "approved", "was_corrected": True})
+    samples = await db.enrollment_samples.count_documents({"user_id": user_id})
+    words = await db.personal_words.count_documents({"user_id": user_id})
+    target = next((m for m in MILESTONES if m > learned), learned + 500)
+    previous = max([0, *[m for m in MILESTONES if m <= learned]])
+    return {
+        "learned": learned,
+        "corrected": corrected,
+        "enrollment_samples": samples,
+        "personal_words": words,
+        "threshold": user.get("threshold", get_settings().default_threshold),
+        "milestone": target,
+        "fraction": round((learned - previous) / (target - previous), 3),
+    }

@@ -231,6 +231,20 @@ export async function tts(text: string, language: Language): Promise<Blob> {
   return res.blob();
 }
 
+export interface Progress {
+  learned: number;
+  corrected: number;
+  enrollment_samples: number;
+  personal_words: number;
+  threshold: number;
+  milestone: number;
+  fraction: number;
+}
+
+export function getProgress(userId: string): Promise<Progress> {
+  return request<Progress>(`/users/${encodeURIComponent(userId)}/progress`);
+}
+
 export function deleteUserData(userId: string): Promise<{ ok: boolean }> {
   return request(`/users/${encodeURIComponent(userId)}/data`, { method: "DELETE" });
 }

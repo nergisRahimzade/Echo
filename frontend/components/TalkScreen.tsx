@@ -8,6 +8,7 @@ import HealthBadge from "@/components/HealthBadge";
 import HelperFix from "@/components/HelperFix";
 import HelperTurnInput from "@/components/HelperTurnInput";
 import HoldToRecord from "@/components/HoldToRecord";
+import LearningRing from "@/components/LearningRing";
 import ListenerView from "@/components/ListenerView";
 import ThinkingAnimation from "@/components/ThinkingAnimation";
 import { useUser } from "@/components/UserGate";
@@ -37,6 +38,8 @@ export default function TalkScreen() {
   const user = useUser();
   const [sessionId, setSessionId] = useState<string>("");
   const [stage, setStage] = useState<Stage>({ kind: "idle" });
+  const [learnedKey, setLearnedKey] = useState(0); // bump after each approval to refresh the ring
+  const learnedOne = () => setLearnedKey((k) => k + 1);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is only readable after mount
   useEffect(() => setSessionId(currentSessionId()), []);
@@ -94,8 +97,10 @@ export default function TalkScreen() {
     setStage({ kind: "check", result, busy: true });
     try {
       const { next_action } = await sendFeedback({ utteranceId: result.utterance_id, verdict });
-      if (next_action === "speak") speakToListener(result, false); // the user approved it: no undo needed
-      else afterThumbsDown(result, next_action);
+      if (next_action === "speak") {
+        speakToListener(result, false); // the user approved it: no undo needed
+        learnedOne();
+      } else afterThumbsDown(result, next_action);
     } catch (err) {
       showError(err);
     }
@@ -105,6 +110,7 @@ export default function TalkScreen() {
     setStage({ kind: "spoken", result, undo: false });
     try {
       await sendFeedback({ utteranceId: result.utterance_id, verdict: "up", auto: true });
+      learnedOne();
     } catch {
       /* the sentence was already said; a missed confirmation only costs one learning example */
     }
@@ -115,6 +121,7 @@ export default function TalkScreen() {
     try {
       await sendFeedback({ utteranceId: result.utterance_id, verdict: "down", finalText: text });
       speakToListener({ ...result, sentence: text }, false);
+      learnedOne();
     } catch (err) {
       showError(err);
     }
@@ -189,7 +196,7 @@ export default function TalkScreen() {
         {showRecorder && <HoldToRecord onRecorded={onRecorded} disabled={!sessionId} />}
       </section>
 
-      <div className="flex items-center justify-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-3">
         {sessionId && <HelperTurnInput userId={user.user_id} sessionId={sessionId} />}
         <button
           type="button"
@@ -200,6 +207,7 @@ export default function TalkScreen() {
         >
           <MessageSquarePlus aria-hidden className="h-8 w-8" />
         </button>
+        <LearningRing userId={user.user_id} refreshKey={learnedKey} />
         <HealthBadge />
       </div>
     </div>
