@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 
 from app import db
 from app.config import get_settings
-from app.routes import enroll, phrases, users
+from app.routes import enroll, phrases, users, words
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -49,6 +49,7 @@ async def database_unavailable(_: Request, exc: db.DatabaseUnavailable) -> JSONR
 app.include_router(phrases.router)
 app.include_router(users.router)
 app.include_router(enroll.router)
+app.include_router(words.router)
 
 
 @app.get("/health")

@@ -12,6 +12,7 @@ import {
   Play,
   RotateCcw,
   SkipForward,
+  UsersRound,
   Volume2,
 } from "lucide-react";
 import AudioPlayButton from "@/components/AudioPlayButton";
@@ -181,7 +182,8 @@ export default function EnrollFlow() {
         <CheckCircle2 aria-hidden className="h-32 w-32 text-success" strokeWidth={2} />
         <ProgressRing done={doneCount} total={total} size={96} label={`${doneCount} of ${total} phrases recorded`} />
         <div className="flex flex-wrap justify-center gap-4">
-          <IconLink href="/" label="Home" icon={<House className="h-10 w-10" />} primary />
+          <IconLink href="/words" label="Add names and places" icon={<UsersRound className="h-10 w-10" />} primary />
+          <IconLink href="/" label="Home" icon={<House className="h-10 w-10" />} />
           <IconButton onClick={recordAgain} label="Record the phrases again" icon={<RotateCcw className="h-10 w-10" />} />
         </div>
       </div>

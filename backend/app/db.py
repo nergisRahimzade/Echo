@@ -57,8 +57,9 @@ async def ensure_schema(db: AsyncDatabase) -> None:
         await db[name].create_index([("user_id", ASCENDING)])
 
     await db.style_profiles.create_index([("user_id", ASCENDING)], unique=True)
+    # "key" is the case-folded word, so "Zeynep" and "zeynep" are one entry.
     await db.personal_words.create_index(
-        [("user_id", ASCENDING), ("word", ASCENDING)], unique=True
+        [("user_id", ASCENDING), ("key", ASCENDING)], unique=True
     )
     await db.utterances.create_index([("user_id", ASCENDING), ("status", ASCENDING)])
     await db.utterances.create_index(

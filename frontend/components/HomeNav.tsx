@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { AudioLines } from "lucide-react";
+import { AudioLines, UsersRound } from "lucide-react";
 
 /** Big icon shortcuts on the home screen. */
 export default function HomeNav() {
   return (
     <nav className="flex justify-center gap-4" aria-label="Main">
       <NavIcon href="/enroll" label="Teach Echo your voice" icon={<AudioLines aria-hidden className="h-9 w-9" />} />
+      <NavIcon href="/words" label="Names and places" icon={<UsersRound aria-hidden className="h-9 w-9" />} />
     </nav>
   );
 }
