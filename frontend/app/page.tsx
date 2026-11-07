@@ -1,10 +1,13 @@
 import { Mic } from "lucide-react";
 import Header from "@/components/Header";
+import HealthBadge from "@/components/HealthBadge";
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <Header>
+        <HealthBadge />
+      </Header>
       <main className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
         {/* Placeholder: recording is wired up in task 1.3 */}
         <button
