@@ -1,56 +1,58 @@
 @import "tailwindcss";
 
 /*
-  Echo colour tokens. High contrast on purpose: many users have tired eyes or low vision.
+  Echo colour tokens, taken from the Echo slideshow: paper grey, royal blue, navy ink, sage.
+  Soft on purpose (no pure white or pure black backgrounds), but every text pair still passes
+  WCAG AA (body text 12:1 or more, buttons 5:1 or more): many users have tired eyes or low vision.
   Use them in Tailwind as bg-background, text-foreground, bg-primary, etc.
   Light theme by default; dark when the user picks it in Settings (<html data-theme="dark">),
   or when the device is in dark mode and the user hasn't picked light.
 */
 :root {
   color-scheme: light;
-  --background: #fbf8f3;
-  --surface: #ffffff;
-  --foreground: #1b1a17;
-  --muted: #5c574e;
-  --border: #d9d2c5;
-  --primary: #1f5eff;
-  --primary-foreground: #ffffff;
-  --success: #16803c;
-  --success-foreground: #ffffff;
-  --danger: #c62828;
-  --danger-foreground: #ffffff;
+  --background: #ecebe6;
+  --surface: #f6f5f1;
+  --foreground: #141b33;
+  --muted: #4f566a;
+  --border: #c9ccd3;
+  --primary: #22408f;
+  --primary-foreground: #f6f5f1;
+  --success: #2b6b5f;
+  --success-foreground: #f6f5f1;
+  --danger: #a8323a;
+  --danger-foreground: #f6f5f1;
 }
 
 /* Dark colours: picked in Settings, or (next rule, same values: keep both in sync) from the device. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --background: #121212;
-  --surface: #1e1e1e;
-  --foreground: #f5f2ec;
-  --muted: #b8b2a7;
-  --border: #3a3832;
-  --primary: #5b8cff;
-  --primary-foreground: #0b0b0b;
-  --success: #3ccf6e;
-  --success-foreground: #0b0b0b;
-  --danger: #ff6b6b;
-  --danger-foreground: #0b0b0b;
+  --background: #141a2e;
+  --surface: #1d2540;
+  --foreground: #e9eaef;
+  --muted: #a7aec3;
+  --border: #343e60;
+  --primary: #8fa7ee;
+  --primary-foreground: #111730;
+  --success: #7fc6b8;
+  --success-foreground: #111730;
+  --danger: #f08c8c;
+  --danger-foreground: #111730;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --background: #121212;
-    --surface: #1e1e1e;
-    --foreground: #f5f2ec;
-    --muted: #b8b2a7;
-    --border: #3a3832;
-    --primary: #5b8cff;
-    --primary-foreground: #0b0b0b;
-    --success: #3ccf6e;
-    --success-foreground: #0b0b0b;
-    --danger: #ff6b6b;
-    --danger-foreground: #0b0b0b;
+    --background: #141a2e;
+  --surface: #1d2540;
+  --foreground: #e9eaef;
+  --muted: #a7aec3;
+  --border: #343e60;
+  --primary: #8fa7ee;
+  --primary-foreground: #111730;
+  --success: #7fc6b8;
+  --success-foreground: #111730;
+  --danger: #f08c8c;
+  --danger-foreground: #111730;
   }
 }
 
