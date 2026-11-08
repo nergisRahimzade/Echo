@@ -149,7 +149,21 @@ export default function TalkScreen() {
   const showRecorder = stage.kind === "idle" || stage.kind === "error" || stage.kind === "repeat" || (stage.kind === "spoken" && !stage.undo);
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
+    
+<div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
+  <div className="flex flex-col gap-2 text-center">
+    <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+      {stage.kind === "spoken" ? "Listener Mode" : "User Mode"}
+    </span>
+    <h2 className="text-3xl font-bold tracking-tight text-foreground">
+      {stage.kind === "spoken"
+        ? "Here's what I said"
+        : stage.kind === "thinking"
+          ? "Understanding your voice"
+          : "Your voice matters"}
+    </h2>
+  </div>
+
       {/* The screen is icon-only on purpose; screen readers still get a page heading. */}
       <h1 className="sr-only">{t("talk.heading")}</h1>
       {/* Listener area: large text, only ever shows sentences that were said aloud */}
