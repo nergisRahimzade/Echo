@@ -103,7 +103,10 @@
     "flip": "Turn upside down for someone sitting opposite",
     "learned": "{n} sentences learned",
     "heading": "Echo: talk",
-    "intro": "Start speaking by holding the microphone for me to help you"
+    "intro": "Start speaking by holding the microphone for me to help you",
+    "upHelp": "Press thumbs up if the sentence is correct",
+    "downHelp": "Press thumbs down if the sentence is wrong",
+    "downHelpLast": "Press thumbs down if the sentence is wrong. If it's wrong this time, please write what you meant to say."
   },
   "settings": {
     "title": "Settings",

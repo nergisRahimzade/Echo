@@ -26,9 +26,9 @@ def enabled() -> bool:
 
 
 # Lower stability + some style = livelier, more expressive delivery (ElevenLabs' defaults sound flat).
-# speed 0.75 = 75% of normal speed (ElevenLabs range 0.7-1.2): slow and easy to follow for listeners.
+# speed 0.85 = 85% of normal speed (ElevenLabs range 0.7-1.2): calm and easy to follow for listeners.
 # Changing any of these makes new cache keys, so old audio is never replayed at the old speed.
-VOICE_SETTINGS = {"stability": 0.4, "similarity_boost": 0.75, "style": 0.3, "use_speaker_boost": True, "speed": 0.75}
+VOICE_SETTINGS = {"stability": 0.4, "similarity_boost": 0.75, "style": 0.3, "use_speaker_boost": True, "speed": 0.85}
 
 
 def cache_path(text: str, language: str, elevenlabs_id: str) -> Path:

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Hand, Loader2, Mic, MicOff, Pointer, Square } from "lucide-react";
 import { useRecorder, type Recording } from "@/lib/useRecorder";
 import { useT } from "@/lib/i18n";
+import { unlockAudio } from "@/lib/voice";
 
 export type RecordMode = "hold" | "tap";
 const MODE_KEY = "echo.recordMode";
@@ -72,16 +73,19 @@ export default function HoldToRecord({
 
   // --- Hold mode: pointer down/up. Pointer capture keeps recording if the finger slides off. ---
   const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    unlockAudio(); // lets Echo's answer play by itself later (phones block sound not started by a tap)
     if (mode !== "hold" || blocked || e.button !== 0) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     start();
   };
   const onPointerUp = () => {
+    unlockAudio();
     if (mode === "hold") stop();
   };
 
   // --- Tap mode: click toggles. ---
   const onClick = () => {
+    unlockAudio();
     if (mode !== "tap" || blocked) return;
     if (isRecording || busy) stop();
     else start();
@@ -92,6 +96,7 @@ export default function HoldToRecord({
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (!isActivationKey(e) || e.repeat || blocked) return;
     e.preventDefault();
+    unlockAudio();
     if (mode === "hold") start();
     else if (isRecording || busy) stop();
     else start();
