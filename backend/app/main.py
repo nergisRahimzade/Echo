@@ -73,8 +73,7 @@ async def health() -> dict:
         # Which optional features are switched on (the app adapts to them).
         "features": {
             "tts": "elevenlabs" if settings.elevenlabs_api_key else "browser",
-            "stt": "whisper+elevenlabs" if settings.elevenlabs_api_key and settings.elevenlabs_stt else "whisper",
-            # "out of credits" = ElevenLabs refused for lack of credits: browser voice + Whisper only for now.
+            # "out of credits" = ElevenLabs refused for lack of credits: the browser voice is used for now.
             "elevenlabs": elevenlabs.status(),
             "embeddings": "voyage" if settings.embedding_api_key else "spelling",
         },

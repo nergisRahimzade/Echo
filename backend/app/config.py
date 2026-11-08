@@ -67,10 +67,6 @@ class Settings(BaseSettings):
     # elevenlabs.io; the free plan cannot use library voices through the API), so they are only
     # offered once their voice ids are set here.
     elevenlabs_model: str = "eleven_multilingual_v2"
-    # Speech-to-text: with an ElevenLabs key, Scribe adds one more reading of every recording,
-    # next to the Whisper ones (more independent readings = a better agreement score).
-    elevenlabs_stt: bool = True
-    elevenlabs_stt_model: str = "scribe_v2"
     default_voice: str = "jessica"
     elevenlabs_voice_girl: str | None = None
     elevenlabs_voice_boy: str | None = None

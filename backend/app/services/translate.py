@@ -34,13 +34,10 @@ def describe_readings(c: Transcript) -> str:
     """e.g. '[read as Turkish, read as English, auto-detected English; certainty high]'."""
     parts = []
     for r in c.readings or [c.reading]:
-        by = ""
-        if r.startswith("elevenlabs:"):  # "elevenlabs:tr" / "elevenlabs:auto:en": the Scribe reading
-            by, r = " by ElevenLabs", r[len("elevenlabs:"):]
         if r.startswith("auto:"):
-            parts.append(f"auto-detected {LANGUAGE_NAMES.get(r[5:], r[5:])}{by}")
+            parts.append(f"auto-detected {LANGUAGE_NAMES.get(r[5:], r[5:])}")
         else:
-            parts.append(f"read as {LANGUAGE_NAMES.get(r, r)}{by}")
+            parts.append(f"read as {LANGUAGE_NAMES.get(r, r)}")
     return f"[{', '.join(parts)}; certainty {c.certainty}]"
 
 # Guesses the user rejected this recently in the same conversation are shown as "not this".

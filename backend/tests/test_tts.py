@@ -102,4 +102,4 @@ def test_elevenlabs_error_becomes_unavailable(monkeypatch):
 
 def test_health_reports_features(client):
     body = client.get("/health").json()
-    assert body["features"] == {"tts": "elevenlabs", "stt": "whisper", "elevenlabs": "on", "embeddings": "voyage"}
+    assert body["features"] == {"tts": "elevenlabs", "elevenlabs": "on", "embeddings": "voyage"}
