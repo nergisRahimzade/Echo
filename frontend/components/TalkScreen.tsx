@@ -17,7 +17,7 @@ import { ApiError, sendFeedback, translate, type TranslateResult } from "@/lib/a
 import { playPrompt } from "@/lib/prompts";
 import { currentSessionId, startNewSession } from "@/lib/session";
 import type { Recording } from "@/lib/useRecorder";
-import { sayAloud } from "@/lib/voice";
+import { loadVoice, sayAloud } from "@/lib/voice";
 import { useI18n } from "@/lib/i18n";
 
 /** How long the thumbs-down stays after Echo speaks on its own. */
@@ -43,6 +43,8 @@ export default function TalkScreen() {
   const [stage, setStage] = useState<Stage>({ kind: "idle" });
   const [learnedKey, setLearnedKey] = useState(0); // bump after each approval to refresh the ring
   const learnedOne = () => setLearnedKey((k) => k + 1);
+  // true after the first 👎: the user is saying it again, and one more 👎 brings the helper.
+  const [lastTry, setLastTry] = useState(false);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is only readable after mount
   useEffect(() => setSessionId(currentSessionId()), []);
@@ -54,18 +56,21 @@ export default function TalkScreen() {
 
   /** Say it aloud for the listener. `undo` offers the 5-second thumbs-down (only when Echo decided alone). */
   const speakToListener = useCallback((result: TranslateResult, undo = true) => {
+    if (!undo) setLastTry(false); // a sentence the user approved: the next one starts fresh
     setStage({ kind: "spoken", result, undo });
     void sayAloud(result.sentence, result.language);
   }, []);
 
   /** Wrong guess: ask the user to say it again, in their language. */
   const askToRepeat = useCallback((result: TranslateResult) => {
+    setLastTry(true);
     setStage({ kind: "repeat", result });
     void playPrompt("sayAgain", uiLang); // prompts are for the user: in the app language
   }, [uiLang]);
 
   /** Second wrong guess in a row: stop guessing, offer the helper. */
   const callHelper = useCallback((result: TranslateResult) => {
+    setLastTry(false);
     setStage({ kind: "helper", result });
     void playPrompt("helper", uiLang);
   }, [uiLang]);
@@ -78,6 +83,9 @@ export default function TalkScreen() {
       setStage({ kind: "thinking" });
       try {
         const result = await translate({ userId: user.user_id, sessionId, audio: rec.blob });
+        // Fetch the sentence's audio while "thinking" is still shown, so the buttons and the
+        // voice appear together and the guess plays at once (no tap on the speaker needed).
+        await loadVoice(result.sentence, result.language);
         if (result.action === "speak") speakToListener(result);
         else setStage({ kind: "check", result, busy: false });
       } catch (err) {
@@ -134,6 +142,7 @@ export default function TalkScreen() {
 
   const newConversation = () => {
     setSessionId(startNewSession());
+    setLastTry(false);
     setStage({ kind: "idle" });
   };
 
@@ -158,6 +167,7 @@ export default function TalkScreen() {
             {stage.undo && (
               <CountdownThumbDown
                 seconds={UNDO_SECONDS}
+                lastTry={lastTry}
                 onDown={() => flagSpokenAsWrong(stage.result)}
                 onExpire={() => confirmSpoken(stage.result)}
               />
@@ -169,6 +179,7 @@ export default function TalkScreen() {
           <CheckPanel
             result={stage.result}
             busy={stage.busy}
+            lastTry={lastTry}
             onUp={() => checkAnswer(stage.result, "up")}
             onDown={() => checkAnswer(stage.result, "down")}
           />

@@ -67,13 +67,10 @@
   "words": {
     "title": "İsimler ve yerler",
     "subtitle": "Aile, arkadaşlar, yerler ve evcil hayvanlar. Bir yardımcı yazabilir.",
-    "type": "Tür",
     "person": "Kişi",
     "place": "Yer",
     "pet": "Hayvan",
     "other": "Diğer",
-    "input": "İsim ya da yer",
-    "placeholder": "Zeynep, Kadıköy…",
     "add": "Ekle",
     "list": "Kayıtlı isimler ve yerler",
     "record": "{word} nasıl söylüyorsun, kaydet",
@@ -82,7 +79,21 @@
     "loadError": "Kelimeler yüklenemedi.",
     "saveError": "Kelime kaydedilemedi.",
     "deleteError": "Kelime silinemedi.",
-    "recordError": "Kayıt kaydedilemedi."
+    "recordError": "Kayıt kaydedilemedi.",
+    "tabs": "İsim türleri",
+    "empty": "Bu sekmede henüz bir şey yok.",
+    "inputs": {
+      "person": "Bir kişinin adı",
+      "place": "Bir yerin adı",
+      "pet": "Bir evcil hayvanın adı",
+      "other": "Başka bir kelime"
+    },
+    "placeholders": {
+      "person": "Zeynep, Ali…",
+      "place": "Kadıköy, park…",
+      "pet": "Pamuk, Boncuk…",
+      "other": "Çay, futbol…"
+    }
   },
   "talk": {
     "newConversation": "Yeni bir konuşma başlat",
@@ -103,7 +114,10 @@
     "flip": "Karşıda oturan biri için ters çevir",
     "learned": "{n} cümle öğrenildi",
     "heading": "Echo: konuş",
-    "intro": "Sana yardım edebilmem için mikrofona basılı tutarak konuşmaya başla"
+    "intro": "Sana yardım edebilmem için mikrofona basılı tutarak konuşmaya başla",
+    "upHelp": "Cümle doğruysa başparmak yukarı simgesine bas",
+    "downHelp": "Cümle yanlışsa başparmak aşağı simgesine bas",
+    "downHelpLast": "Cümle yanlışsa başparmak aşağı simgesine bas. Bu sefer de yanlışsa, lütfen ne demek istediğini yaz."
   },
   "settings": {
     "title": "Ayarlar",
