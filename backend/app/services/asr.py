@@ -170,19 +170,41 @@ MAX_HINT_WORDS = 12
 NAME_TOKEN = re.compile(r"\b([A-ZÇĞİÖŞÜ][\wçğıöşüâîû]+)(?:['’][\wçğıöşü]+)?", re.UNICODE)
 
 
+# A sentence only approved by silence (spoken, nobody pressed thumbs-down) counts half: on its
+# own it doesn't reach the hint, so a mistake nobody noticed isn't fed back to Whisper. Said
+# twice that way, or confirmed once by a person, it does.
+SILENT_APPROVAL_WEIGHT = 0.5
+MIN_HINT_WEIGHT = 1.0
+
+
 async def _approved_counts(db, user_id: str) -> dict[str, float]:
-    """Approved sentence -> how often it was said (helper corrections count double: they are the truth)."""
+    """Approved sentence -> how much it counts, highest first: 1 per thumbs-up, 0.5 per silent
+    approval, +1 per helper correction (they are the truth). Disputed examples are left out."""
     pipeline = [
-        {"$match": {"user_id": user_id, "status": "approved"}},
+        {"$match": {"user_id": user_id, "status": "approved", "disputed": {"$ne": True}}},
         {"$group": {
             "_id": {"$ifNull": ["$final_text", "$sentence"]},
-            "n": {"$sum": 1},
+            "n": {"$sum": {"$cond": [{"$eq": ["$auto_approved", True]}, SILENT_APPROVAL_WEIGHT, 1]}},
             "corrected": {"$sum": {"$cond": [{"$eq": ["$was_corrected", True]}, 1, 0]}},
         }},
         {"$sort": {"n": -1}},
         {"$limit": 200},
     ]
-    return {d["_id"]: d["n"] + d["corrected"] for d in await aggregate(db.utterances, pipeline) if d["_id"]}
+    counts = {d["_id"]: d["n"] + d["corrected"] for d in await aggregate(db.utterances, pipeline) if d["_id"]}
+    return dict(sorted(counts.items(), key=lambda kv: -kv[1]))  # stable: ties keep the database order
+
+
+async def _enrolled_phrases(db, user_id: str, language: str | None) -> list[str]:
+    """The phrases this user recorded during enrollment, most re-recorded first. A one-language
+    user only gets phrases in that language: Whisper is forced into it."""
+    query: dict = {"user_id": user_id}
+    if language in ("tr", "en"):
+        query["language"] = language
+    counts: dict[str, int] = {}
+    async for d in db.enrollment_samples.find(query, {"text": 1}).sort("created_at", 1):
+        if d.get("text"):
+            counts[d["text"]] = counts.get(d["text"], 0) + 1
+    return sorted(counts, key=lambda t: -counts[t])
 
 
 def learned_names(sentences: dict[str, float], known: set[str], min_weight: float = 2) -> list[str]:
@@ -199,10 +221,11 @@ def learned_names(sentences: dict[str, float], known: set[str], min_weight: floa
     return [w for w, n in sorted(weights.items(), key=lambda kv: -kv[1]) if n >= min_weight]
 
 
-async def build_prompt(db, user_id: str, top_phrases: int = 10) -> str:
+async def build_prompt(db, user_id: str, top_phrases: int = 10, language: str | None = None) -> str:
     """Hint text for Whisper, rebuilt on every request (so every approval counts immediately):
     the user's most-used names first, names learned from approved sentences, then their most
-    frequent approved sentences."""
+    frequent approved sentences, topped up with their enrollment phrases while there are fewer
+    than `top_phrases` of those (so a new user's hint isn't empty)."""
     words = [d["word"] async for d in db.personal_words.find({"user_id": user_id}, {"word": 1}).sort("created_at", 1)]
     sentences = await _approved_counts(db, user_id)
     lowered = {t: t.casefold() for t in sentences}
@@ -213,7 +236,11 @@ async def build_prompt(db, user_id: str, top_phrases: int = 10) -> str:
 
     ranked = sorted(words, key=lambda w: -usage(w))  # stable: unused words keep the order they were added
     names = (ranked + learned_names(sentences, {w.casefold() for w in words}))[:MAX_HINT_WORDS]
-    phrases = list(sentences)[:top_phrases]
+    phrases = [t for t, n in sentences.items() if n >= MIN_HINT_WEIGHT][:top_phrases]
+    if len(phrases) < top_phrases:
+        have = {normalize(p) for p in phrases}
+        extra = [p for p in await _enrolled_phrases(db, user_id, language) if normalize(p) not in have]
+        phrases += extra[: top_phrases - len(phrases)]
 
     parts = []
     if names:
@@ -230,12 +257,28 @@ KNOWN_HALLUCINATIONS = {
 }
 
 
+SENTENCE_END = re.compile(r"(?<=[.?!])\s+")
+
+
+def _hint_sentences(prompt: str) -> set[str]:
+    """The sentences of a hint, normalised, without the list of names ("Zeynep, Ali, Pamuk.")."""
+    out = set()
+    for chunk in SENTENCE_END.split(prompt):
+        pieces = [p.strip() for p in chunk.rstrip(".?!").split(",")]
+        if len(pieces) > 1 and all(p[:1].isupper() for p in pieces):
+            continue  # the names list: hearing it back word for word is an echo
+        out.add(normalize(chunk))
+    return out
+
+
 def _is_hallucination(t: Transcript, prompt: str | None) -> bool:
-    """Whisper sometimes repeats the prompt, or invents text, when it hears no clear speech."""
+    """Whisper sometimes repeats the prompt, or invents text, when it hears no clear speech.
+    Hearing exactly one of the hint's sentences is not an echo: that is the hint working (the
+    user said a phrase they say often, or recorded during enrollment)."""
     text = normalize(t.text)
     if not text or text in KNOWN_HALLUCINATIONS:
         return True
-    if prompt and t.prompt_used and len(text) > 8 and text in normalize(prompt):
+    if prompt and t.prompt_used and len(text) > 8 and text in normalize(prompt) and text not in _hint_sentences(prompt):
         return True
     return (t.no_speech_prob or 0) > 0.8 and (t.avg_logprob or 0) < -1.0
 

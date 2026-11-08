@@ -1,6 +1,6 @@
 # Echo
 
-Echo is an agentic AI that learns how one person with cerebral palsy (CP) or dysarthria speaks, then translates their speech into clear words for the people around them. Turkish and English first. Built for Capital Hacks.
+Echo is an agentic AI that learns how one person with cerebral palsy (CP) or dysarthria speaks, then translates their speech into clear words for the people around them. Turkish and English first. Built for Capital Hacks 5.0.
 
 ## Folder layout
 

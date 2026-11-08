@@ -56,9 +56,11 @@ class Settings(BaseSettings):
     max_upload_mb: float = 10.0
     whisper_model: str | None = None  # default: whisper-large-v3 on Groq, whisper-1 on OpenAI
     # Sound matching: DTW cost at which similarity reaches 0 (measured: same phrase ~0.04,
-    # different phrase ~0.47), and extra weight for sentences a helper corrected.
+    # different phrase ~0.47), extra weight for sentences a helper corrected, and less weight for
+    # sentences only approved by silence (nobody pressed thumbs-down; nobody said thumbs-up either).
     sound_match_scale: float = 0.5
     corrected_match_weight: float = 1.15
+    silent_match_weight: float = 0.85
     # ElevenLabs voices. multilingual_v2 = the most natural, expressive model that stays exact on
     # short sentences (~0.45 s); every voice can speak Turkish and English. The voice list itself
     # is in app/services/voices.py. Child voices are your own ElevenLabs voices (Voice Design on
