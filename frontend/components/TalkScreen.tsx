@@ -153,7 +153,21 @@ export default function TalkScreen() {
   const showRecorder = stage.kind === "idle" || stage.kind === "error" || stage.kind === "repeat" || (stage.kind === "spoken" && !stage.undo);
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
+    
+<div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
+  <div className="flex flex-col gap-2 text-center">
+    <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+      {stage.kind === "spoken" ? "Listener Mode" : "User Mode"}
+    </span>
+    <h2 className="text-3xl font-bold tracking-tight text-foreground">
+      {stage.kind === "spoken"
+        ? "Here's what I said"
+        : stage.kind === "thinking"
+          ? "Understanding your voice"
+          : "Your voice matters"}
+    </h2>
+  </div>
+
       {/* The screen is icon-only on purpose; screen readers still get a page heading. */}
       <h1 className="sr-only">{t("talk.heading")}</h1>
       {/* Listener area: large text, only ever shows sentences that were said aloud */}
@@ -166,10 +180,33 @@ export default function TalkScreen() {
 
         {stage.kind === "spoken" && (
           <>
-            <p className="text-center text-4xl font-bold leading-tight sm:text-5xl" lang={stage.result.language} data-testid="listener-sentence">
-              {stage.result.sentence}
-            </p>
+           
+<div className="w-full rounded-3xl border-2 border-primary/30 bg-surface px-6 py-10 text-center shadow-lg">
+  <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-primary">
+    Your message
+  </p>
+  <p
+    className="text-3xl font-bold leading-relaxed text-foreground sm:text-5xl"
+    lang={stage.result.language}
+    data-testid="listener-sentence"
+  >
+    {stage.result.sentence}
+  </p>
+</div>
+
             {!stage.undo && <ListenerView sentence={stage.result.sentence} language={stage.result.language} />}
+            
+            {!stage.undo && (
+            <button
+              type="button"
+              onClick={() => setStage({ kind: "idle" })}
+              className="flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-primary px-6 py-4 text-xl font-semibold text-primary-foreground transition active:scale-95"
+            >
+              <Repeat aria-hidden="true" className="h-7 w-7" />
+              Speak Again
+            </button>
+          )}
+
             {stage.undo && (
               <>
                 <CountdownThumbDown
@@ -229,11 +266,21 @@ export default function TalkScreen() {
         )}
       </section>
 
-      {/* User area: the big button */}
-      <section className="flex flex-col items-center gap-4">
-        {/* Shown only once the conversation id exists, so it never flashes in a faded, disabled state. */}
-        {showRecorder && sessionId && <HoldToRecord onRecorded={onRecorded} />}
-      </section>
+      
+
+{/* User Mode: show recording controls only when needed */}
+{showRecorder && sessionId && stage.kind !== "spoken" && (
+  <section className="flex w-full flex-col items-center gap-4 rounded-3xl border border-border bg-surface p-5 shadow-lg">
+    <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+      {stage.kind === "repeat"
+        ? "Try speaking again"
+        : "Your voice, your way"}
+    </span>
+
+    <HoldToRecord onRecorded={onRecorded} />
+  </section>
+)}
+
 
       <div className="flex flex-wrap items-center justify-center gap-3">
         {sessionId && <HelperTurnInput userId={user.user_id} sessionId={sessionId} />}
