@@ -109,7 +109,7 @@ async def translate(db, user: dict, session_id: str, audio_path: str) -> dict:
     fp, (prompt, words, turns, rejected, attempt) = await asyncio.gather(
         fingerprint_upload(audio_path),  # 16 kHz WAV + voiceprint (raises AudioError)
         asyncio.gather(
-            build_prompt(db, user_id),
+            build_prompt(db, user_id, language=main_language),
             get_personal_words(ctx),
             get_recent_turns(ctx),
             recent_rejections(db, user_id, session_id),

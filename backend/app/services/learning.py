@@ -1,11 +1,14 @@
-"""The learning loop: what happens when a sentence is approved."""
+"""The learning loop: what happens when a sentence is approved, or a guess is rejected."""
 
 import logging
 from datetime import UTC, datetime, timedelta
 
+from bson import ObjectId
+
 from app.services import embeddings, style
 from app.services.audio import AudioError
 from app.services.voiceprint import fingerprint_upload
+from app.text import normalize
 
 logger = logging.getLogger("echo.learning")
 
@@ -38,6 +41,63 @@ async def on_approved(db, utterance: dict) -> None:
     if utterance.get("user_id"):
         # Every 10 approvals the style profile is rebuilt in the background.
         await style.maybe_update_in_background(db, utterance["user_id"])
+
+
+async def relabel_failed_attempts(db, utterance: dict, text: str) -> int:
+    """Give the recordings of this message's earlier, rejected attempts the sentence the user
+    finally confirmed (thumbs up or a helper fix). Returns how many were relabelled.
+
+    Attempt 1 rejected, attempt 2 confirmed as "Su istiyorum": attempt 1's recording was the user
+    trying to say "Su istiyorum" too, so it becomes a second example of how they say it (sound
+    matching). It stays "rejected" with its wrong guess, so the progress counts, the threshold
+    tuning and "not this" are unchanged. Silent approvals don't relabel: nobody checked them.
+    """
+    earlier = int(utterance.get("attempt", 1)) - 1
+    if earlier < 1 or not text or not utterance.get("session_id"):
+        return 0
+    cursor = db.utterances.find({
+        "user_id": utterance["user_id"],
+        "session_id": utterance["session_id"],
+        "speaker": {"$ne": "other"},
+        "created_at": {"$lt": utterance["created_at"]},
+    }).sort("created_at", -1).limit(earlier)
+    ids = []
+    async for d in cursor:
+        if d.get("status") != "rejected" or d.get("final_text"):
+            break  # the attempts of this message are the rejected ones right before it
+        ids.append(d["_id"])
+    if ids:
+        await db.utterances.update_many(
+            {"_id": {"$in": ids}},
+            {"$set": {"final_text": text, "relabelled_from": str(utterance["_id"]), "relabelled_at": datetime.now(UTC)}},
+        )
+        logger.info("relabelled %d earlier attempt(s) of %s as %r", len(ids), utterance["_id"], text[:60])
+    return len(ids)
+
+
+async def dispute_silent_matches(db, utterance: dict) -> int:
+    """A guess was rejected. If it came from sound-matching a sentence that was only approved by
+    silence, that example may be a missed mistake: stop learning from it. Returns how many.
+
+    Examples a person confirmed (thumbs up, helper fix) are kept: the new recording may just be a
+    different sentence that sounds alike.
+    """
+    wrong = normalize(utterance.get("sentence") or "")
+    if not wrong:
+        return 0
+    ids = []
+    for m in utterance.get("sound_matches") or []:
+        if m.get("source") == "utterance" and normalize(m.get("text") or "") == wrong and ObjectId.is_valid(m.get("ref_id") or ""):
+            ids.append(ObjectId(m["ref_id"]))
+    if not ids:
+        return 0
+    result = await db.utterances.update_many(
+        {"_id": {"$in": ids}, "user_id": utterance["user_id"], "auto_approved": True, "was_corrected": {"$ne": True}},
+        {"$set": {"disputed": True, "disputed_by": str(utterance["_id"])}},
+    )
+    if result.modified_count:
+        logger.info("disputed %d silently approved example(s) of %r", result.modified_count, wrong[:60])
+    return result.modified_count
 
 
 async def approve_unanswered_spoken(db, user_id: str) -> int:

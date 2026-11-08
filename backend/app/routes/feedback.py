@@ -58,7 +58,13 @@ async def feedback(body: FeedbackIn) -> dict:
         next_action = "helper" if int(utt.get("attempt", 1)) >= HELPER_AFTER_ATTEMPTS else "repeat"
 
     await db.utterances.update_one({"_id": utt["_id"]}, {"$set": update})
+    if body.verdict == "down":
+        # The guess was wrong (a helper fix is sent as "down" too).
+        await learning.dispute_silent_matches(db, utt)
     if update["status"] == "approved":
         await learning.on_approved(db, {**utt, **update})
+        if not body.auto:
+            # Confirmed by a person: the earlier, rejected tries of this message meant it too.
+            await learning.relabel_failed_attempts(db, utt, body.final_text or utt.get("sentence") or "")
     await threshold.maybe_tune(db, utt["user_id"])
     return {"ok": True, "next_action": next_action}

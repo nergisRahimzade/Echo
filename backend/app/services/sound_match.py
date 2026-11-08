@@ -57,18 +57,32 @@ async def load_references(db, user_id: str) -> list[dict]:
     projection = {"text": 1, "audio_vector": 1, "audio_frames": 1}
     async for d in db.enrollment_samples.find({"user_id": user_id, "audio_vector": {"$exists": True}}, projection):
         refs.append({"id": str(d["_id"]), "text": d["text"], "vector": d["audio_vector"], "frames": d["audio_frames"], "source": "enrollment", "weight": 1.0, "corrected": False})
-    # Approved conversation sentences become references too (learning loop, phase 5).
-    query = {"user_id": user_id, "status": "approved", "audio_vector": {"$exists": True}}
-    async for d in db.utterances.find(query, {**projection, "sentence": 1, "final_text": 1, "was_corrected": 1}):
+    # Approved conversation sentences become references too (learning loop, phase 5), and so do
+    # rejected attempts relabelled with the sentence the user confirmed afterwards.
+    # Examples disputed by a later thumbs-down are left out.
+    settings = get_settings()
+    query = {
+        "user_id": user_id,
+        "audio_vector": {"$exists": True},
+        "disputed": {"$ne": True},
+        "$or": [{"status": "approved"}, {"status": "rejected", "relabelled_from": {"$exists": True}}],
+    }
+    fields = {**projection, "sentence": 1, "final_text": 1, "was_corrected": 1, "auto_approved": 1, "status": 1}
+    async for d in db.utterances.find(query, fields):
         text = d.get("final_text") or d.get("sentence")
-        if text:
-            refs.append({
-                "id": str(d["_id"]), "text": text, "vector": d["audio_vector"], "frames": d["audio_frames"],
-                "source": "utterance",
-                # Helper corrections are the most valuable examples: count them a bit more.
-                "weight": get_settings().corrected_match_weight if d.get("was_corrected") else 1.0,
-                "corrected": bool(d.get("was_corrected")),
-            })
+        if not text:
+            continue
+        corrected = d.get("status") == "approved" and bool(d.get("was_corrected"))
+        if corrected:
+            weight = settings.corrected_match_weight  # helper corrections: the most valuable examples
+        elif d.get("auto_approved"):
+            weight = settings.silent_match_weight  # nobody checked it: a missed mistake can't push itself to "speak"
+        else:
+            weight = 1.0
+        refs.append({
+            "id": str(d["_id"]), "text": text, "vector": d["audio_vector"], "frames": d["audio_frames"],
+            "source": "utterance", "weight": weight, "corrected": corrected,
+        })
     return refs
 
 
