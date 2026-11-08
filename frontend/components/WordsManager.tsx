@@ -211,6 +211,7 @@ export default function WordsManager() {
                   <button
                     type="button"
                     onClick={() => remove(w.word)}
+                    data-guide="words-delete"
                     aria-label={t("words.delete", { word: w.word })}
                     className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-border text-danger transition active:scale-95"
                   >

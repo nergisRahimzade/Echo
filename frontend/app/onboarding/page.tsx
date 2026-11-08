@@ -7,6 +7,7 @@ import { ArrowRight, Check, Loader2, PlayCircle } from "lucide-react";
 import Flag, { type FlagCode } from "@/components/Flag";
 import Header from "@/components/Header";
 import SpeakButton from "@/components/SpeakButton";
+import UsageGuide from "@/components/UsageGuide";
 import { ApiError, createUser, getDemoUser } from "@/lib/api";
 import { saveUser, speakingLanguage, type MainLanguage } from "@/lib/user";
 import { translate, useI18n } from "@/lib/i18n";
@@ -70,7 +71,7 @@ export default function OnboardingPage() {
 
         <form onSubmit={submit} className="flex flex-col gap-8">
           {/* Name */}
-          <label className="flex flex-col gap-2">
+          <label className="flex flex-col gap-2" data-guide="onboarding-name">
             <span className="text-xl font-semibold">{t("onboarding.name")}</span>
             <input
               value={name}
@@ -82,7 +83,7 @@ export default function OnboardingPage() {
           </label>
 
           {/* Main language */}
-          <fieldset className="flex flex-col gap-2">
+          <fieldset className="flex flex-col gap-2" data-guide="onboarding-language">
             <legend className="mb-2 text-xl font-semibold">{t("onboarding.language")}</legend>
             <div className="grid grid-cols-3 gap-3">
               {LANGUAGES.map((l) => {
@@ -111,7 +112,7 @@ export default function OnboardingPage() {
 
           {/* Consent */}
           <div className="flex flex-col gap-4 rounded-2xl border-2 border-border bg-surface p-4">
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-4" data-guide="onboarding-consent">
               <p className="flex-1 text-lg leading-relaxed">{consentText}</p>
               <SpeakButton text={consentText} language={speakLang} label={t("onboarding.consentAloud")} />
             </div>
@@ -120,6 +121,7 @@ export default function OnboardingPage() {
               role="checkbox"
               aria-checked={consent}
               onClick={() => setConsent((c) => !c)}
+              data-guide="onboarding-agree"
               className={`flex min-h-16 items-center gap-4 rounded-2xl border-4 px-4 text-xl font-semibold transition active:scale-[0.98] ${
                 consent ? "border-success bg-success/10" : "border-border"
               }`}
@@ -145,6 +147,7 @@ export default function OnboardingPage() {
             type="submit"
             disabled={!canSubmit}
             aria-label={t("onboarding.continue")}
+            data-guide="onboarding-continue"
             className="flex min-h-20 items-center justify-center gap-3 rounded-3xl bg-primary text-2xl font-semibold text-primary-foreground shadow-lg transition active:scale-95 disabled:opacity-40"
           >
             {saving ? (
@@ -159,6 +162,7 @@ export default function OnboardingPage() {
           <Link
             href="/demo"
             data-testid="try-demo"
+            data-guide="onboarding-demo"
             className="flex min-h-16 items-center justify-center gap-3 rounded-2xl border-4 border-border bg-surface px-5 text-lg font-semibold transition active:scale-95"
           >
             <PlayCircle aria-hidden className="h-7 w-7 text-primary" />
@@ -166,6 +170,7 @@ export default function OnboardingPage() {
           </Link>
         )}
       </main>
+      <UsageGuide page="onboarding" />
     </div>
   );
 }

@@ -28,6 +28,7 @@ export default function ListenerView({ sentence, language }: { sentence: string;
         aria-label={t("talk.showListener")}
         title={t("talk.showListener")}
         data-testid="show-listener"
+        data-guide="show-listener"
         className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-border bg-surface transition active:scale-95"
       >
         <Maximize2 aria-hidden className="h-8 w-8" />

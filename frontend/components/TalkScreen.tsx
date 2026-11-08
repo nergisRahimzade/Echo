@@ -159,7 +159,7 @@ export default function TalkScreen() {
 
         {stage.kind === "spoken" && (
           <>
-            <p className="text-center text-4xl font-bold leading-tight sm:text-5xl" lang={stage.result.language} data-testid="listener-sentence">
+            <p className="text-center text-4xl font-bold leading-tight sm:text-5xl" lang={stage.result.language} data-testid="listener-sentence" data-guide="listener-sentence">
               {stage.result.sentence}
             </p>
             {!stage.undo && <ListenerView sentence={stage.result.sentence} language={stage.result.language} />}
@@ -190,7 +190,7 @@ export default function TalkScreen() {
 
         {stage.kind === "repeat" && (
           <div className="flex flex-col items-center gap-3" data-testid="repeat-prompt">
-            <span className="flex h-28 w-28 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <span className="flex h-28 w-28 items-center justify-center rounded-full bg-primary/10 text-primary" data-guide="repeat">
               <Repeat aria-label={t("talk.sayAgain")} className="h-14 w-14" />
             </span>
           </div>

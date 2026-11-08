@@ -263,17 +263,22 @@ export default function EnrollFlow() {
 
       {recording ? (
         <div className="flex w-full items-center justify-center gap-5" data-testid="enroll-review">
-          <IconButton
-            onClick={() => setRecording(null)}
-            disabled={uploading}
-            label={t("enroll.recordAgain")}
-            icon={<RotateCcw className="h-10 w-10" />}
-          />
-          <AudioPlayButton blob={recording.blob} label={t("enroll.listen")} />
+          <div className="shrink-0" data-guide="enroll-redo">
+            <IconButton
+              onClick={() => setRecording(null)}
+              disabled={uploading}
+              label={t("enroll.recordAgain")}
+              icon={<RotateCcw className="h-10 w-10" />}
+            />
+          </div>
+          <div className="shrink-0" data-guide="enroll-listen">
+            <AudioPlayButton blob={recording.blob} label={t("enroll.listen")} />
+          </div>
           <button
             type="button"
             onClick={saveAndNext}
             disabled={uploading}
+            data-guide="enroll-save"
             aria-label={t("enroll.saveNext")}
             className="flex h-24 w-24 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition active:scale-95 disabled:opacity-60"
           >

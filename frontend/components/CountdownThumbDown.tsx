@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ThumbsDown } from "lucide-react";
+import { guideOpen } from "@/lib/guide";
 import { useT } from "@/lib/i18n";
 
 /**
  * A big thumbs-down that stays for `seconds` with a shrinking ring around it.
  * Tap = "that's wrong". Time runs out = the sentence counts as right.
+ * The ring stands still while a usage-guide bubble is open, so reading it never costs the undo.
  */
 export default function CountdownThumbDown({
   seconds = 5,
@@ -29,9 +31,13 @@ export default function CountdownThumbDown({
   }, [onExpire]);
 
   useEffect(() => {
-    const started = performance.now();
+    let elapsed = 0;
+    let last = performance.now();
     const timer = setInterval(() => {
-      const remaining = Math.max(0, seconds - (performance.now() - started) / 1000);
+      const now = performance.now();
+      if (!guideOpen()) elapsed += now - last;
+      last = now;
+      const remaining = Math.max(0, seconds - elapsed / 1000);
       setLeft(remaining);
       if (remaining <= 0 && !done.current) {
         done.current = true;
@@ -52,6 +58,7 @@ export default function CountdownThumbDown({
         aria-label={t("talk.wrong")}
         aria-describedby="countdown-help"
         data-testid="thumbs-down-countdown"
+        data-guide="undo-down"
         onClick={() => {
           if (done.current) return;
           done.current = true;

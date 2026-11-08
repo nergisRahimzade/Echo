@@ -14,7 +14,7 @@ export default function EnrollPage() {
         <main className="flex flex-1 flex-col">
           <EnrollFlow />
         </main>
-        <UsageGuide tour="enroll" />
+        <UsageGuide page="enroll" />
       </UserGate>
     </div>
   );

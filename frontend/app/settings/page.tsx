@@ -14,7 +14,7 @@ export default function SettingsPage() {
         <main className="flex flex-1 flex-col">
           <SettingsPanel />
         </main>
-        <UsageGuide tour="settings" />
+        <UsageGuide page="settings" />
       </UserGate>
     </div>
   );

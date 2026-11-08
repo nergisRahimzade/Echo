@@ -6,23 +6,18 @@ import {
   findTarget,
   markTourSeen,
   markWelcomed,
-  TOURS,
+  PAGES,
+  setGuideOpen,
   tourSeen,
+  visibleSteps,
   welcomed,
   type GuidePlace,
   type GuideStep,
-  type TourId,
+  type PageId,
+  type StepId,
 } from "@/lib/guide";
 import { sayAloud, stopVoice } from "@/lib/voice";
 import { useI18n } from "@/lib/i18n";
-
-/** The element each tour waits for before it starts on its own (the page has finished loading). */
-const READY: Record<TourId, string> = {
-  talk: "record",
-  enroll: "enroll-progress",
-  words: "words-tabs",
-  settings: "settings-language",
-};
 
 const EDGE = 16; // keep the bubble this far from the screen edges
 const GAP = 20; // space between the spotlight and the bubble
@@ -79,13 +74,18 @@ function arrowStyle(p: Placed): React.CSSProperties | null {
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
- * The usage guide for one page: the first time the page is opened (and whenever the
- * "How to use Echo" button is pressed) it dims the screen, lights up one control at a time
- * and explains it in a bubble next to it. Every bubble can be read aloud.
+ * The usage guide for one page. It dims the screen, lights up one control at a time and explains
+ * it in a bubble next to it (every bubble can be read aloud):
+ * - the page tour: by itself on the first visit, and from the "How to use Echo" button,
+ *   covering every control that is on screen at that moment;
+ * - moment tours: once, the first time a control that appears later shows up (Echo's guess,
+ *   the undo ring, the helper box, the enroll review buttons, a saved word...).
  */
-export default function UsageGuide({ tour }: { tour: TourId }) {
+export default function UsageGuide({ page }: { page: PageId }) {
   const { t, lang } = useI18n();
+  const guide = PAGES[page];
   const [phase, setPhase] = useState<Phase>("closed");
+  const [tourId, setTourId] = useState<string>(page);
   const [steps, setSteps] = useState<GuideStep[]>([]);
   const [index, setIndex] = useState(0);
   const [layout, setLayout] = useState<Layout | null>(null);
@@ -94,37 +94,52 @@ export default function UsageGuide({ tour }: { tour: TourId }) {
   const openerRef = useRef<HTMLElement | null>(null);
   const spokeRef = useRef(false);
 
-  const begin = useCallback(
-    (withWelcome: boolean) => {
-      const list = TOURS[tour].filter((s) => findTarget(s.target));
-      if (list.length === 0) return;
-      openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      setSteps(list);
-      setIndex(0);
-      setLayout(null);
-      setPhase(withWelcome ? "welcome" : "steps");
-    },
-    [tour],
-  );
+  const begin = useCallback((id: string, ids: StepId[], withWelcome: boolean) => {
+    const list = visibleSteps(ids);
+    if (list.length === 0) return;
+    openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setTourId(id);
+    setSteps(list);
+    setIndex(0);
+    setLayout(null);
+    setPhase(withWelcome ? "welcome" : "steps");
+  }, []);
 
-  // First visit: start by itself once the page has loaded (its main control is on screen).
+  // First visit: the page tour starts by itself once the page has loaded (its main control is on screen).
   useEffect(() => {
-    if (tourSeen(tour)) return;
+    if (tourSeen(page)) return;
     let tries = 0;
     let settle: ReturnType<typeof setTimeout> | undefined;
     const poll = setInterval(() => {
       tries += 1;
-      const ready = findTarget(READY[tour]) !== null;
+      const ready = findTarget(PAGES[page].ready) !== null;
       if (!ready && tries < 75) return;
       clearInterval(poll);
       // Give the rest of the page a moment to appear (status pill, progress ring).
-      if (ready) settle = setTimeout(() => begin(!welcomed()), 400);
+      if (ready) settle = setTimeout(() => begin(page, PAGES[page].steps, !welcomed()), 400);
     }, 200);
     return () => {
       clearInterval(poll);
       clearTimeout(settle);
     };
-  }, [tour, begin]);
+  }, [page, begin]);
+
+  // Moment tours: watch for controls that appear later, once the page tour has been seen.
+  useEffect(() => {
+    if (phase !== "closed" || guide.moments.length === 0) return;
+    const watch = setInterval(() => {
+      if (!tourSeen(page)) return;
+      const moment = guide.moments.find((m) => !tourSeen(m.id) && findTarget(m.ready) !== null);
+      if (moment) begin(moment.id, moment.steps, false);
+    }, 400);
+    return () => clearInterval(watch);
+  }, [phase, page, guide, begin]);
+
+  // While a bubble is open, page timers (the 5-second undo ring) wait for it.
+  useEffect(() => {
+    setGuideOpen(phase !== "closed");
+    return () => setGuideOpen(false);
+  }, [phase]);
 
   const step = phase === "steps" ? steps[index] : undefined;
 
@@ -170,8 +185,11 @@ export default function UsageGuide({ tour }: { tour: TourId }) {
 
   const close = () => {
     silence();
-    markTourSeen(tour);
+    markTourSeen(tourId);
     markWelcomed();
+    // Moments whose controls were just explained don't need their own tour later.
+    const shown = new Set(steps.map((s) => s.target));
+    guide.moments.forEach((m) => shown.has(m.ready) && markTourSeen(m.id));
     setPhase("closed");
     setLayout(null);
     openerRef.current?.focus({ preventScroll: true });
@@ -232,7 +250,7 @@ export default function UsageGuide({ tour }: { tour: TourId }) {
       <div aria-hidden className="h-24 shrink-0" />
       <button
         type="button"
-        onClick={() => begin(false)}
+        onClick={() => begin(page, guide.steps, false)}
         data-guide="guide-button"
         data-testid="guide-open"
         className="fixed bottom-4 right-4 z-40 flex min-h-14 items-center gap-2.5 rounded-full border-2 border-border bg-surface pl-3.5 pr-5 text-base font-medium shadow-md transition active:scale-95 sm:bottom-6 sm:right-6"

@@ -14,7 +14,7 @@ export default function TalkPage() {
         <main className="flex flex-1 flex-col">
           <TalkScreen />
         </main>
-        <UsageGuide tour="talk" />
+        <UsageGuide page="talk" />
       </UserGate>
     </div>
   );

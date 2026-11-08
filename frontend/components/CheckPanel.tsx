@@ -37,7 +37,7 @@ export default function CheckPanel({
 
   return (
     <div className="flex w-full flex-col items-center gap-5" data-testid="check-panel">
-      <div className="flex w-full max-w-md items-center gap-4">
+      <div className="flex w-full max-w-md items-center gap-4" data-guide="check-guess">
         <button
           type="button"
           onClick={replay}
@@ -64,6 +64,7 @@ export default function CheckPanel({
             aria-label={t("talk.no")}
             aria-describedby="check-down-help"
             data-testid="check-down"
+            data-guide="check-down"
             className="flex h-32 w-full items-center justify-center rounded-3xl bg-danger text-danger-foreground shadow-lg transition active:scale-95 disabled:opacity-50"
           >
             <ThumbsDown aria-hidden className="h-16 w-16" strokeWidth={2.5} />
@@ -80,6 +81,7 @@ export default function CheckPanel({
             aria-label={t("talk.yes")}
             aria-describedby="check-up-help"
             data-testid="check-up"
+            data-guide="check-up"
             className="flex h-32 w-full items-center justify-center rounded-3xl bg-success text-success-foreground shadow-lg transition active:scale-95 disabled:opacity-50"
           >
             <ThumbsUp aria-hidden className="h-16 w-16" strokeWidth={2.5} />
@@ -104,6 +106,7 @@ export function WriteButton({ onClick, disabled }: { onClick: () => void; disabl
       onClick={onClick}
       disabled={disabled}
       data-testid="write-correction"
+      data-guide="write-it"
       className="flex min-h-16 w-full max-w-md items-center justify-center gap-3 rounded-2xl border-2 border-border bg-surface px-4 text-lg font-semibold transition active:scale-95 disabled:opacity-50"
     >
       <Pencil aria-hidden className="h-7 w-7 shrink-0" />

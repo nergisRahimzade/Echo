@@ -256,6 +256,90 @@
       "settingsPrivacy": {
         "title": "Verilerin",
         "body": "Tüm kayıtlarını ve kelimelerini istediğin zaman Echo'dan silebilirsin."
+      },
+      "onbName": {
+        "title": "Adın",
+        "body": "Echo'yu kullanacak kişinin adını yaz. Bunu bir aile üyesi ya da yardımcı doldurabilir."
+      },
+      "onbLanguage": {
+        "title": "Dil",
+        "body": "Konuştuğun dili seç: İngilizce, Türkçe ya da ikisi birden."
+      },
+      "onbConsent": {
+        "title": "Kayıtların",
+        "body": "Echo'nun kayıtlarını nasıl gizli tuttuğu. Sesli dinlemek için hoparlöre bas."
+      },
+      "onbAgree": {
+        "title": "Kabul ediyorum",
+        "body": "Echo'nun sesini kaydedip ondan öğrenebilmesi için bunu işaretle."
+      },
+      "onbContinue": {
+        "title": "Devam",
+        "body": "Adı yazıp kabul ettiğinde, Echo'ya sesini öğretmeye başlamak için buraya bas."
+      },
+      "onbDemo": {
+        "title": "Demoyu dene",
+        "body": "Kayıt olmadan, önceden eğitilmiş örnek bir hesapla Echo'yu dene."
+      },
+      "checkGuess": {
+        "title": "Echo'nun tahmini",
+        "body": "Echo emin değil, bu yüzden tahminini önce sana gösterir ve yalnızca senin için sessizce çalar. Tekrar dinlemek için hoparlöre bas."
+      },
+      "checkDown": {
+        "title": "Başparmak aşağı",
+        "body": "Cümle yanlışsa bas. Echo senden tekrar söylemeni ister; iki yanlıştan sonra bir yardımcı ister."
+      },
+      "checkUp": {
+        "title": "Başparmak yukarı",
+        "body": "Cümle doğruysa bas. Echo onu karşındaki kişiye sesli söyler ve ondan öğrenir."
+      },
+      "writeIt": {
+        "title": "Ne demek istediğini yaz",
+        "body": "Doğru cümleyi kendin yaz. Echo onu sesli söyler ve ondan öğrenir."
+      },
+      "spokenSentence": {
+        "title": "Echo'nun söylediği",
+        "body": "Echo'nun sesli söylediği cümle, karşındaki kişi okuyabilsin diye büyük harflerle."
+      },
+      "undoDown": {
+        "title": "Yanlış mıydı?",
+        "body": "Echo emindi, bu yüzden hemen söyledi. Yanlışsa halka bitmeden buraya bas. Bu rehber açıkken halka bekler."
+      },
+      "showListener": {
+        "title": "Karşındakine göster",
+        "body": "Karşındaki kişi okuyabilsin diye cümleyi tam ekran göster. Kapatmak için herhangi bir yere dokun; çevirme düğmesi karşında oturan biri için ekranı ters çevirir."
+      },
+      "repeat": {
+        "title": "Tekrar söyle",
+        "body": "Echo doğru anlayamadı. Mikrofona bas ve cümleni bir kez daha söyle."
+      },
+      "helperIcon": {
+        "title": "Yardımcı iste",
+        "body": "İki yanlış tahminden sonra Echo tahmin etmeyi bırakır. Bir yardımcının ne demek istediğini yazması için buraya bas."
+      },
+      "helperForm": {
+        "title": "Cümleyi yaz",
+        "body": "Ne demek istendiğini yaz ve gönder'e bas. Echo onu sesli söyler ve bir dahaki sefere hatırlar."
+      },
+      "writeCancel": {
+        "title": "Geri dön",
+        "body": "Yanlışlıkla mı bastın? Echo'nun tahminine geri dön."
+      },
+      "enrollRedo": {
+        "title": "Yeniden kaydet",
+        "body": "Beğenmedin mi? Cümleyi yeniden kaydet."
+      },
+      "enrollListen": {
+        "title": "Dinle",
+        "body": "Kaydetmeden önce kaydını dinle."
+      },
+      "enrollSave": {
+        "title": "Kaydet ve ilerle",
+        "body": "Bu kaydı sakla ve sonraki cümleye geç."
+      },
+      "wordsDelete": {
+        "title": "Sil",
+        "body": "Artık ihtiyacın olmayan bir kelimeyi kaldır."
       }
     }
   }

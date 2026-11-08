@@ -14,7 +14,7 @@ export default function WordsPage() {
         <main className="flex flex-1 flex-col">
           <WordsManager />
         </main>
-        <UsageGuide tour="words" />
+        <UsageGuide page="words" />
       </UserGate>
     </div>
   );

@@ -256,6 +256,90 @@
       "settingsPrivacy": {
         "title": "Your data",
         "body": "Delete all your recordings and words from Echo at any time."
+      },
+      "onbName": {
+        "title": "Your name",
+        "body": "Type the name of the person who will use Echo. A family member or helper can fill this in."
+      },
+      "onbLanguage": {
+        "title": "Language",
+        "body": "Pick the language you speak: English, Turkish, or both."
+      },
+      "onbConsent": {
+        "title": "Your recordings",
+        "body": "How Echo keeps your recordings private. Press the speaker to hear it read aloud."
+      },
+      "onbAgree": {
+        "title": "I agree",
+        "body": "Tick this to agree, so Echo can record your voice and learn from it."
+      },
+      "onbContinue": {
+        "title": "Continue",
+        "body": "When the name is filled in and you agree, press here to start teaching Echo your voice."
+      },
+      "onbDemo": {
+        "title": "Try the demo",
+        "body": "Try Echo with a ready-trained example account, without signing up."
+      },
+      "checkGuess": {
+        "title": "Echo's guess",
+        "body": "Echo isn't sure, so it shows you its guess first and plays it quietly for you only. Press the speaker to hear it again."
+      },
+      "checkDown": {
+        "title": "Thumbs down",
+        "body": "Press if the sentence is wrong. Echo asks you to say it again; after two wrong tries it asks a helper."
+      },
+      "checkUp": {
+        "title": "Thumbs up",
+        "body": "Press if the sentence is right. Echo says it out loud to the other person and learns from it."
+      },
+      "writeIt": {
+        "title": "Write what you meant",
+        "body": "Type the right sentence yourself. Echo says it out loud and learns from it."
+      },
+      "spokenSentence": {
+        "title": "What Echo said",
+        "body": "The sentence Echo said out loud, in big letters for the other person to read."
+      },
+      "undoDown": {
+        "title": "Was it wrong?",
+        "body": "Echo was sure, so it spoke straight away. If it got it wrong, press here before the ring runs out. The ring waits while this guide is open."
+      },
+      "showListener": {
+        "title": "Show to listener",
+        "body": "Fill the screen with the sentence so the other person can read it. Tap anywhere to close; the flip button turns it around for someone sitting opposite."
+      },
+      "repeat": {
+        "title": "Say it again",
+        "body": "Echo didn't get it right. Press the microphone and say your sentence once more."
+      },
+      "helperIcon": {
+        "title": "Ask a helper",
+        "body": "After two wrong guesses Echo stops guessing. Press here so a helper can type what you meant."
+      },
+      "helperForm": {
+        "title": "Type the sentence",
+        "body": "Type what was meant and press send. Echo says it out loud and remembers it for next time."
+      },
+      "writeCancel": {
+        "title": "Go back",
+        "body": "Pressed by mistake? Go back to Echo's guess."
+      },
+      "enrollRedo": {
+        "title": "Record again",
+        "body": "Not happy with it? Record the phrase again."
+      },
+      "enrollListen": {
+        "title": "Listen",
+        "body": "Hear your recording before you save it."
+      },
+      "enrollSave": {
+        "title": "Save and next",
+        "body": "Save this recording and go to the next phrase."
+      },
+      "wordsDelete": {
+        "title": "Delete",
+        "body": "Remove a word you don't need any more."
       }
     }
   }

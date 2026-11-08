@@ -31,6 +31,7 @@ export default function HelperFix({
         onClick={() => setOpen(true)}
         aria-label={t("talk.askHelper")}
         data-testid="helper-icon"
+        data-guide="helper-icon"
         className="flex h-36 w-36 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition active:scale-95"
       >
         <HandHelping aria-hidden className="h-20 w-20" strokeWidth={2} />
@@ -42,6 +43,7 @@ export default function HelperFix({
     <form
       className="flex w-full max-w-md flex-col gap-3"
       data-testid="helper-form"
+      data-guide="helper-form"
       onSubmit={async (e) => {
         e.preventDefault();
         const value = text.trim();
@@ -76,6 +78,7 @@ export default function HelperFix({
             aria-label={t("talk.cancelWrite")}
             title={t("talk.cancelWrite")}
             data-testid="write-cancel"
+            data-guide="write-cancel"
             className="flex min-h-20 w-20 shrink-0 items-center justify-center rounded-3xl border-2 border-border bg-surface transition active:scale-95 disabled:opacity-40"
           >
             <ArrowLeft aria-hidden className="h-9 w-9" />
