@@ -3,8 +3,11 @@
 /*
   Echo colour tokens. High contrast on purpose: many users have tired eyes or low vision.
   Use them in Tailwind as bg-background, text-foreground, bg-primary, etc.
+  Light theme by default; dark when the user picks it in Settings (<html data-theme="dark">),
+  or when the device is in dark mode and the user hasn't picked light.
 */
 :root {
+  color-scheme: light;
   --background: #fbf8f3;
   --surface: #ffffff;
   --foreground: #1b1a17;
@@ -18,8 +21,25 @@
   --danger-foreground: #ffffff;
 }
 
+/* Dark colours: picked in Settings, or (next rule, same values: keep both in sync) from the device. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #121212;
+  --surface: #1e1e1e;
+  --foreground: #f5f2ec;
+  --muted: #b8b2a7;
+  --border: #3a3832;
+  --primary: #5b8cff;
+  --primary-foreground: #0b0b0b;
+  --success: #3ccf6e;
+  --success-foreground: #0b0b0b;
+  --danger: #ff6b6b;
+  --danger-foreground: #0b0b0b;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --background: #121212;
     --surface: #1e1e1e;
     --foreground: #f5f2ec;

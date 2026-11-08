@@ -2,6 +2,7 @@
 
 import DeleteMyData from "@/components/DeleteMyData";
 import Flag from "@/components/Flag";
+import ThemeToggle from "@/components/ThemeToggle";
 import VoicePicker from "@/components/VoicePicker";
 import { UI_LANGUAGES, useI18n } from "@/lib/i18n";
 
@@ -37,6 +38,8 @@ export default function SettingsPanel() {
           ))}
         </div>
       </section>
+
+      <ThemeToggle />
 
       <VoicePicker />
 

@@ -155,7 +155,10 @@
     "voiceUnavailable": "Natural voices are not available on this server, so Echo uses this device's own voice.",
     "voiceLoadError": "Could not load the voices.",
     "voiceSaveError": "Could not save the voice. Please try again.",
-    "startOver": "Start again"
+    "startOver": "Start again",
+    "theme": "Colours",
+    "themeLight": "Light",
+    "themeDark": "Dark"
   },
   "prompts": {
     "sayAgain": "Please say it again.",
