@@ -1,4 +1,5 @@
-"""Speech recognition with hosted Whisper large-v3 (Groq or OpenAI; same API shape).
+"""Speech recognition with hosted Whisper large-v3 (Groq or OpenAI; same API shape), plus one
+ElevenLabs Scribe reading when an ElevenLabs key is set (services/elevenlabs.py).
 
 `transcribe()` gets one guess. `build_prompt()` makes the hint text from the user's personal
 words and most-used approved phrases, so Whisper expects *their* vocabulary.
@@ -14,6 +15,7 @@ import httpx
 
 from app.config import get_settings
 from app.db import aggregate
+from app.services import elevenlabs
 from app.text import normalize
 
 logger = logging.getLogger("echo.asr")
@@ -45,10 +47,12 @@ class Transcript:
     forced_language: str | None = None  # the language Whisper was told to use (None = auto-detect)
     # Every reading that produced this same text, e.g. ["tr", "en", "auto:en"] (filled when merging).
     readings: list[str] = field(default_factory=list)
+    engine: str = "whisper"  # or "elevenlabs" (Scribe)
 
     @property
     def reading(self) -> str:
-        return self.forced_language or f"auto:{self.language}"
+        base = self.forced_language or f"auto:{self.language}"
+        return base if self.engine == "whisper" else f"{self.engine}:{base}"
 
     @property
     def certainty(self) -> str:
@@ -283,6 +287,30 @@ def _is_hallucination(t: Transcript, prompt: str | None) -> bool:
     return (t.no_speech_prob or 0) > 0.8 and (t.avg_logprob or 0) < -1.0
 
 
+def hint_keyterms(prompt: str | None) -> list[str]:
+    """Scribe has no free-text prompt, only a list of key terms: the hint's names and short phrases."""
+    if not prompt:
+        return []
+    terms: list[str] = []
+    for chunk in SENTENCE_END.split(prompt):
+        pieces = [p.strip() for p in chunk.rstrip(".?!").split(",")]
+        if len(pieces) > 1 and all(p[:1].isupper() for p in pieces):
+            terms.extend(pieces)  # the names list
+        else:
+            terms.append(chunk)
+    return elevenlabs.keyterms(terms)
+
+
+async def scribe(wav: Path, language: str | None, prompt: str | None, client: httpx.AsyncClient) -> Transcript:
+    """One ElevenLabs Scribe reading, as a Transcript (raises ASRError on failure)."""
+    try:
+        r = await elevenlabs.transcribe(Path(wav), language, hint_keyterms(prompt), client)
+    except elevenlabs.STTError as exc:
+        raise ASRError(str(exc)) from exc
+    return Transcript(text=r["text"], language=r["language"] or language, avg_logprob=r["avg_logprob"],
+                      forced_language=language, engine="elevenlabs")
+
+
 async def get_candidates(
     wav: Path, language: str | None, prompt: str | None, languages: list[str] | None = None
 ) -> list[Transcript]:
@@ -294,6 +322,8 @@ async def get_candidates(
     their languages plus one auto-detected, because auto-detect alone misfires on short words
     (measured: "Hayır" heard as English "Please.", "Merhaba" as Chinese).
     On Groq the third guess uses the turbo model, which has its own rate limit.
+    With an ElevenLabs key (and credits), Scribe adds one more reading in parallel: a different
+    model family, so when it agrees with Whisper that counts for more than Whisper agreeing with itself.
     """
     alt = ALT_MODEL if _provider()[1] == PROVIDERS["groq"][1] else None
     variants: list[tuple[str | None, float, str | None, str | None]]  # prompt, temperature, model, language
@@ -304,13 +334,13 @@ async def get_candidates(
     else:
         variants = [(None, 0.0, None, language), (None, 0.4, alt, language)]
     client = shared_client()
-    results = await asyncio.gather(
-        *(transcribe(wav, lang, p, temp, client=client, model=m) for p, temp, m, lang in variants),
-        return_exceptions=True,
-    )
+    guesses = [transcribe(wav, lang, p, temp, client=client, model=m) for p, temp, m, lang in variants]
+    if elevenlabs.stt_enabled():
+        guesses.append(scribe(wav, language, prompt, client))
+    results = await asyncio.gather(*guesses, return_exceptions=True)
     errors = [r for r in results if isinstance(r, Exception)]
     for err in errors:
-        logger.warning("One Whisper guess failed: %s", err)
+        logger.warning("One speech-to-text guess failed: %s", err)
 
     candidates: list[Transcript] = []
     by_text: dict[str, Transcript] = {}

@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 
 from app import db
 from app.config import get_settings
+from app.services import elevenlabs
 from app.services.asr import close_shared_client
 from app.routes import enroll, feedback, phrases, translate, tts, turns, users, utterances, words
 
@@ -72,6 +73,9 @@ async def health() -> dict:
         # Which optional features are switched on (the app adapts to them).
         "features": {
             "tts": "elevenlabs" if settings.elevenlabs_api_key else "browser",
+            "stt": "whisper+elevenlabs" if settings.elevenlabs_api_key and settings.elevenlabs_stt else "whisper",
+            # "out of credits" = ElevenLabs refused for lack of credits: browser voice + Whisper only for now.
+            "elevenlabs": elevenlabs.status(),
             "embeddings": "voyage" if settings.embedding_api_key else "spelling",
         },
     }
