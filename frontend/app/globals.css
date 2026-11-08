@@ -4,34 +4,25 @@
   Echo colour tokens. High contrast on purpose: many users have tired eyes or low vision.
   Use them in Tailwind as bg-background, text-foreground, bg-primary, etc.
 */
+
+/* Echo Midnight Theme — Accessible Communication */
 :root {
-  --background: #fbf8f3;
-  --surface: #ffffff;
-  --foreground: #1b1a17;
-  --muted: #5c574e;
-  --border: #d9d2c5;
-  --primary: #1f5eff;
-  --primary-foreground: #ffffff;
-  --success: #16803c;
-  --success-foreground: #ffffff;
-  --danger: #c62828;
-  --danger-foreground: #ffffff;
+  --background: #111D2A;
+  --surface: #223345;
+  --foreground: #F4F8FB;
+  --muted: #C0D0DD;
+  --border: #526A7C;
+
+  --primary: #A2E8D6;
+  --primary-foreground: #111D2A;
+
+  --success: #4ADE80;
+  --success-foreground: #111D2A;
+
+  --danger: #FB7185;
+  --danger-foreground: #111D2A;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #121212;
-    --surface: #1e1e1e;
-    --foreground: #f5f2ec;
-    --muted: #b8b2a7;
-    --border: #3a3832;
-    --primary: #5b8cff;
-    --primary-foreground: #0b0b0b;
-    --success: #3ccf6e;
-    --success-foreground: #0b0b0b;
-    --danger: #ff6b6b;
-    --danger-foreground: #0b0b0b;
-  }
 }
 
 @theme inline {
