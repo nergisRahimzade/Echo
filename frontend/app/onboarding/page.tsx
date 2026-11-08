@@ -12,16 +12,16 @@ import { saveUser, speakingLanguage, type MainLanguage } from "@/lib/user";
 import { translate, useI18n } from "@/lib/i18n";
 
 const LANGUAGES: { value: MainLanguage; flags: FlagCode[]; label: string }[] = [
-  { value: "tr", flags: ["tr"], label: "Türkçe" },
   { value: "en", flags: ["gb"], label: "English" },
-  { value: "both", flags: ["tr", "gb"], label: "both" },
+  { value: "tr", flags: ["tr"], label: "Türkçe" },
+  { value: "both", flags: ["gb", "tr"], label: "both" },
 ];
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { t, lang: uiLang, setLang } = useI18n();
   const [name, setName] = useState("");
-  const [language, setLanguage] = useState<MainLanguage>("tr");
+  const [language, setLanguage] = useState<MainLanguage>("en");
   const [consent, setConsent] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
