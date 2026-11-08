@@ -117,12 +117,9 @@ export default function WordsManager() {
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-6">
-      <div>
-        <h1 className="text-3xl font-bold">{t("words.title")}</h1>
-        <p className="mt-1 text-lg text-muted">{t("words.subtitle")}</p>
-      </div>
+      <h1 className="text-3xl font-bold">{t("words.title")}</h1>
 
-      <div className="grid grid-cols-4 gap-2" role="tablist" aria-label={t("words.tabs")}>
+      <div className="grid grid-cols-4 gap-2" role="tablist" aria-label={t("words.tabs")} data-guide="words-tabs">
         {KINDS.map(({ kind: k, Icon }, i) => {
           const on = kind === k;
           return (
@@ -154,7 +151,7 @@ export default function WordsManager() {
       </div>
 
       <div role="tabpanel" id="words-panel" aria-labelledby={`words-tab-${kind}`} className="flex flex-col gap-6">
-        <form onSubmit={add} className="flex gap-3 rounded-2xl border-2 border-border bg-surface p-4">
+        <form onSubmit={add} data-guide="words-add" className="flex gap-3 rounded-2xl border-2 border-border bg-surface p-4">
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -198,6 +195,7 @@ export default function WordsManager() {
                   <button
                     type="button"
                     onClick={() => setRecordingFor(open ? null : w.word)}
+                    data-guide="words-record"
                     aria-label={isRecorded ? t("words.recordAgain", { word: w.word }) : t("words.record", { word: w.word })}
                     className={`relative flex h-16 w-16 items-center justify-center rounded-full border-2 transition active:scale-95 ${
                       open ? "border-primary bg-primary text-primary-foreground" : "border-border"

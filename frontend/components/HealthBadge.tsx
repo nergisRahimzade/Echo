@@ -42,6 +42,7 @@ export default function HealthBadge() {
       role="status"
       aria-label={label}
       title={label}
+      data-guide="health"
       className="flex items-center gap-3 rounded-full border border-border px-3 py-1.5 text-sm"
     >
       <Dot icon={<Server aria-hidden className="h-4 w-4" />} on={serverUp} loading={state.kind === "loading"} />

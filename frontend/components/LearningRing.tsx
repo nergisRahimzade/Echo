@@ -32,7 +32,7 @@ export default function LearningRing({ userId, refreshKey = 0 }: { userId: strin
   const label = t("talk.learned", { n: learned });
 
   return (
-    <div className="flex items-center gap-2" role="img" aria-label={label} title={label} data-testid="learning-ring" data-learned={learned}>
+    <div className="flex items-center gap-2" role="img" aria-label={label} title={label} data-testid="learning-ring" data-learned={learned} data-guide="learned">
       <span className="relative flex shrink-0 items-center justify-center" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="absolute inset-0 -rotate-90" aria-hidden>
           <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--border)" strokeWidth="7" />

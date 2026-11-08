@@ -5,10 +5,9 @@ import { AlertTriangle, MessageSquarePlus, Repeat, RotateCcw } from "lucide-reac
 import CheckPanel, { WriteButton } from "@/components/CheckPanel";
 import CountdownThumbDown from "@/components/CountdownThumbDown";
 import HealthBadge from "@/components/HealthBadge";
-import HelpText from "@/components/HelpText";
 import HelperFix from "@/components/HelperFix";
 import HelperTurnInput from "@/components/HelperTurnInput";
-import HoldToRecord, { useRecordMode } from "@/components/HoldToRecord";
+import HoldToRecord from "@/components/HoldToRecord";
 import LearningRing from "@/components/LearningRing";
 import ListenerView from "@/components/ListenerView";
 import ThinkingAnimation from "@/components/ThinkingAnimation";
@@ -45,7 +44,6 @@ export default function TalkScreen() {
   const learnedOne = () => setLearnedKey((k) => k + 1);
   // true after the first 👎: the user is saying it again, and one more 👎 brings the helper.
   const [lastTry, setLastTry] = useState(false);
-  const [recordMode] = useRecordMode(); // the hint matches how the mic button works (tap or hold)
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is only readable after mount
   useEffect(() => setSessionId(currentSessionId()), []);
@@ -158,10 +156,6 @@ export default function TalkScreen() {
       <h1 className="sr-only">{t("talk.heading")}</h1>
       {/* Listener area: large text, only ever shows sentences that were said aloud */}
       <section className="flex min-h-48 flex-1 flex-col items-center justify-center gap-6" aria-live="polite">
-        {stage.kind === "idle" && (
-          <HelpText text={t(recordMode === "hold" ? "talk.introHold" : "talk.intro")} language={uiLang} testId="talk-intro" />
-        )}
-
         {stage.kind === "thinking" && <ThinkingAnimation />}
 
         {stage.kind === "spoken" && (
@@ -240,6 +234,7 @@ export default function TalkScreen() {
         <button
           type="button"
           onClick={newConversation}
+          data-guide="new-conversation"
           aria-label={t("talk.newConversation")}
           title={t("talk.newConversation")}
           className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-border bg-surface transition active:scale-95"

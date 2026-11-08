@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import MainNav from "@/components/MainNav";
 import TalkScreen from "@/components/TalkScreen";
+import UsageGuide from "@/components/UsageGuide";
 import UserGate from "@/components/UserGate";
 
 export default function TalkPage() {
@@ -13,6 +14,7 @@ export default function TalkPage() {
         <main className="flex flex-1 flex-col">
           <TalkScreen />
         </main>
+        <UsageGuide tour="talk" />
       </UserGate>
     </div>
   );

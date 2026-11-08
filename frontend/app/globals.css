@@ -23,6 +23,20 @@
   --danger-foreground: #f6f5f1;
 }
 
+/* Usage guide: a light card on a dimmed navy screen in both themes (the dim makes everything
+   else dark, so the card, its text and the ring keep the same colours in light and dark). */
+:root {
+  --guide-card: #f6f5f1;
+  --guide-ink: #141b33;
+  --guide-muted: #4f566a;
+  --guide-line: #c9ccd3;
+  --guide-accent: #22408f;
+  --guide-accent-ink: #f6f5f1;
+  --guide-ring: #8fa7ee;
+  --guide-ring-soft: rgb(143 167 238 / 0.28);
+  --guide-dim: rgb(12 17 36 / 0.72);
+}
+
 /* Dark colours: picked in Settings, or (next rule, same values: keep both in sync) from the device. */
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -68,6 +82,12 @@
   --color-success-foreground: var(--success-foreground);
   --color-danger: var(--danger);
   --color-danger-foreground: var(--danger-foreground);
+  --color-guide-card: var(--guide-card);
+  --color-guide-ink: var(--guide-ink);
+  --color-guide-muted: var(--guide-muted);
+  --color-guide-line: var(--guide-line);
+  --color-guide-accent: var(--guide-accent);
+  --color-guide-accent-ink: var(--guide-accent-ink);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --animate-shake: shake 0.45s ease-in-out;

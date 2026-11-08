@@ -24,7 +24,7 @@ export default function ThemeToggle() {
   };
 
   return (
-    <section className="flex flex-col gap-3" aria-labelledby="theme-heading">
+    <section className="flex flex-col gap-3" aria-labelledby="theme-heading" data-guide="settings-theme">
       <h2 id="theme-heading" className="text-xl font-semibold">
         {t("settings.theme")}
       </h2>

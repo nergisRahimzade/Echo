@@ -60,13 +60,10 @@
     "addWords": "Add names and places",
     "recordAllAgain": "Record the phrases again",
     "progress": "{done} of {total} phrases recorded",
-    "heading": "Echo: teach Echo your voice",
-    "intro": "Repeat these {total} phrases for me to learn your speaking pattern",
-    "finishedHelp": "Press the people icon to add names and places that you use. Press the home icon to start speaking. Press the retry icon to record the phrases again."
+    "heading": "Echo: teach Echo your voice"
   },
   "words": {
     "title": "Names and places",
-    "subtitle": "Family, friends, places and pets. A helper can type them.",
     "person": "Person",
     "place": "Place",
     "pet": "Pet",
@@ -114,11 +111,9 @@
     "flip": "Turn upside down for someone sitting opposite",
     "learned": "{n} sentences learned",
     "heading": "Echo: talk",
-    "intro": "Start speaking by pressing the microphone for me to help you. Press it again when you are done.",
     "upHelp": "Press thumbs up if the sentence is correct",
     "downHelp": "Press thumbs down if the sentence is wrong",
     "downHelpLast": "Press thumbs down if the sentence is wrong. If it's wrong this time, please write what you meant to say.",
-    "introHold": "Start speaking by holding the microphone for me to help you",
     "writeIt": "Write what you meant",
     "writeQuestion": "What did you mean to say?",
     "cancelWrite": "Go back"
@@ -126,7 +121,6 @@
   "settings": {
     "title": "Settings",
     "language": "App language",
-    "languageHelp": "Buttons, messages and spoken prompts.",
     "privacy": "Your data",
     "deleteAll": "Delete my data",
     "deleteHelp": "Removes your voice recordings, names, sentences and settings from Echo. This cannot be undone.",
@@ -136,7 +130,6 @@
     "deleted": "All your data was deleted.",
     "deleteError": "Could not delete. Please try again.",
     "voice": "Echo's voice",
-    "voiceHelp": "The voice Echo speaks your sentences with. Tap a voice to hear it.",
     "voiceSample": "Hi! This is how I will sound when I speak for you.",
     "voiceKinds": {
       "woman": "Woman",
@@ -169,5 +162,120 @@
     "loading": "Opening the demo account",
     "missing": "There is no demo account on this server yet.",
     "signUp": "Sign up instead"
+  },
+  "guide": {
+    "open": "How to use Echo",
+    "welcomeTitle": "Welcome to Echo",
+    "welcomeBody": "Let me show you around. It takes about one minute.",
+    "start": "Start tour",
+    "skip": "Skip",
+    "next": "Next",
+    "back": "Back",
+    "finish": "Finish",
+    "close": "Close guide",
+    "readAloud": "Read aloud",
+    "stepOf": "Step {n} of {total}",
+    "steps": {
+      "navTalk": {
+        "title": "Talk",
+        "body": "This is where you speak. Echo says your words clearly for the person you are talking to."
+      },
+      "navEnroll": {
+        "title": "Teach Echo your voice",
+        "body": "Record a few short phrases. The more Echo hears you, the better it understands you."
+      },
+      "navWords": {
+        "title": "Names and places",
+        "body": "Add names of people and places you say often, so Echo gets them right."
+      },
+      "navSettings": {
+        "title": "Settings",
+        "body": "Change the app language, the colours and the voice Echo uses."
+      },
+      "talkRecord": {
+        "title": "Microphone",
+        "body": "Press it and say what you want. Echo listens, then says it clearly for the person you are talking to."
+      },
+      "recordMode": {
+        "title": "Tap or hold",
+        "body": "Choose how the microphone works: tap once to start and again to stop, or hold it while you speak."
+      },
+      "otherSaid": {
+        "title": "What they said",
+        "body": "The other person can type what they said here. Echo uses it to guess your answers better."
+      },
+      "newConversation": {
+        "title": "New conversation",
+        "body": "Start again with a clean page."
+      },
+      "learned": {
+        "title": "Sentences learned",
+        "body": "How many of your sentences Echo has learned. It grows every time a sentence is right."
+      },
+      "health": {
+        "title": "Connection",
+        "body": "Green dots mean Echo is connected and ready to help."
+      },
+      "guideButton": {
+        "title": "This guide",
+        "body": "Open this guide again any time from here."
+      },
+      "enrollProgress": {
+        "title": "Your progress",
+        "body": "How many phrases you have recorded so far."
+      },
+      "enrollLanguage": {
+        "title": "Language",
+        "body": "Choose which language's phrases to record."
+      },
+      "enrollStart": {
+        "title": "Start",
+        "body": "Press to begin. Echo says each phrase out loud, then you repeat it."
+      },
+      "enrollPhrase": {
+        "title": "The phrase",
+        "body": "The picture shows the phrase. Press the speaker to hear it again."
+      },
+      "enrollSkip": {
+        "title": "Skip",
+        "body": "Skip a phrase you don't want to say."
+      },
+      "enrollRecord": {
+        "title": "Record",
+        "body": "Press the microphone and repeat the phrase. You can listen to it before you save it."
+      },
+      "enrollFinished": {
+        "title": "All done",
+        "body": "Add the names and places you use, go home to start talking, or record the phrases again."
+      },
+      "wordsTabs": {
+        "title": "Kinds of words",
+        "body": "People, places, pets and other words each have their own tab."
+      },
+      "wordsAdd": {
+        "title": "Add a word",
+        "body": "Type a name here and press plus. A helper can do this for you."
+      },
+      "wordsRecord": {
+        "title": "Say the word",
+        "body": "Record yourself saying the word, so Echo learns how you say it."
+      },
+      "settingsLanguage": {
+        "title": "App language",
+        "body": "The language of the buttons, messages and spoken prompts."
+      },
+      "settingsTheme": {
+        "title": "Colours",
+        "body": "Pick light or dark colours, whichever is easier on your eyes."
+      },
+      "settingsVoice": {
+        "title": "Echo's voice",
+        "body": "The voice Echo speaks your sentences with. Tap a voice to hear it."
+      },
+      "settingsPrivacy": {
+        "title": "Your data",
+        "body": "Delete all your recordings and words from Echo at any time."
+      }
+    }
   }
 }

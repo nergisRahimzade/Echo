@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import AudioPlayButton from "@/components/AudioPlayButton";
 import Flag from "@/components/Flag";
-import HelpText from "@/components/HelpText";
 import HoldToRecord from "@/components/HoldToRecord";
 import ProgressRing from "@/components/ProgressRing";
 import { useUser } from "@/components/UserGate";
@@ -34,7 +33,7 @@ type Stage = "loading" | "start" | "phrase" | "finished" | "error";
  */
 export default function EnrollFlow() {
   const user = useUser();
-  const { t, lang: uiLang } = useI18n(); // uiLang = app language, for the on-screen instructions
+  const { t } = useI18n();
   const [lang, setLang] = useState<Language>(user.main_language === "en" ? "en" : "tr");
   const [stage, setStage] = useState<Stage>("loading");
   const [phrases, setPhrases] = useState<Phrase[]>([]);
@@ -143,7 +142,7 @@ export default function EnrollFlow() {
 
   const languageSwitch =
     user.main_language === "both" ? (
-      <div className="flex gap-2">
+      <div className="flex gap-2" data-guide="enroll-language">
         {(["tr", "en"] as const).map((l) => (
           <button
             key={l}
@@ -188,13 +187,14 @@ export default function EnrollFlow() {
         <h1 className="sr-only">{t("enroll.heading")}</h1>
         {languageSwitch}
         <CheckCircle2 aria-hidden className="h-32 w-32 text-success" strokeWidth={2} />
-        <ProgressRing done={doneCount} total={total} size={96} label={t("enroll.progress", { done: doneCount, total })} />
-        <div className="flex flex-wrap justify-center gap-4">
+        <div className="shrink-0" data-guide="enroll-progress">
+          <ProgressRing done={doneCount} total={total} size={96} label={t("enroll.progress", { done: doneCount, total })} />
+        </div>
+        <div className="flex flex-wrap justify-center gap-4" data-guide="enroll-finished-actions">
           <IconLink href="/words" label={t("enroll.addWords")} icon={<UsersRound className="h-10 w-10" />} primary />
           <IconLink href="/" label={t("common.home")} icon={<House className="h-10 w-10" />} />
           <IconButton onClick={recordAgain} label={t("enroll.recordAllAgain")} icon={<RotateCcw className="h-10 w-10" />} />
         </div>
-        <HelpText text={t("enroll.finishedHelp")} language={uiLang} testId="enroll-finished-help" />
       </div>
     );
   }
@@ -204,8 +204,9 @@ export default function EnrollFlow() {
       <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
         <h1 className="sr-only">{t("enroll.heading")}</h1>
         {languageSwitch}
-        <HelpText text={t("enroll.intro", { total })} language={uiLang} testId="enroll-intro" />
-        <ProgressRing done={doneCount} total={total} size={96} label={t("enroll.progress", { done: doneCount, total })} />
+        <div className="shrink-0" data-guide="enroll-progress">
+          <ProgressRing done={doneCount} total={total} size={96} label={t("enroll.progress", { done: doneCount, total })} />
+        </div>
         <div className="flex items-center gap-3 text-muted" aria-hidden>
           <Volume2 className="h-10 w-10" />
           <ArrowRight className="h-6 w-6" />
@@ -214,6 +215,7 @@ export default function EnrollFlow() {
         <button
           type="button"
           onClick={() => setStage("phrase")}
+          data-guide="enroll-start"
           aria-label={t("enroll.start")}
           className="flex h-36 w-36 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition active:scale-95"
         >
@@ -228,20 +230,23 @@ export default function EnrollFlow() {
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center gap-6 px-4 py-6">
       <h1 className="sr-only">{t("enroll.heading")}</h1>
       <div className="flex w-full items-center justify-between gap-4">
-        <ProgressRing done={doneCount} total={total} label={t("enroll.progress", { done: doneCount, total })} />
+        <div className="shrink-0" data-guide="enroll-progress">
+          <ProgressRing done={doneCount} total={total} label={t("enroll.progress", { done: doneCount, total })} />
+        </div>
         {languageSwitch}
-        <IconButton
-          onClick={skip}
-          disabled={uploading}
-          label={t("enroll.skip")}
-          icon={<SkipForward className="h-8 w-8" />}
-          small
-        />
+        <div className="shrink-0" data-guide="enroll-skip">
+          <IconButton
+            onClick={skip}
+            disabled={uploading}
+            label={t("enroll.skip")}
+            icon={<SkipForward className="h-8 w-8" />}
+            small
+          />
+        </div>
       </div>
-      <p className="text-center text-muted">{t("enroll.intro", { total })}</p>
 
       {/* The phrase: a big picture, heard aloud. The text is small, for helpers. */}
-      <div className="flex w-full items-center justify-center gap-6" data-testid="enroll-phrase" data-phrase-id={phrase.id}>
+      <div className="flex w-full items-center justify-center gap-6" data-testid="enroll-phrase" data-phrase-id={phrase.id} data-guide="enroll-phrase">
         <span aria-hidden className="text-[110px] leading-none">
           {phrase.icon}
         </span>

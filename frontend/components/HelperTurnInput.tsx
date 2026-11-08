@@ -47,6 +47,7 @@ export default function HelperTurnInput({
       <button
         type="button"
         onClick={() => setOpen(true)}
+        data-guide="other-said"
         aria-label={t("talk.otherSaid")}
         title={t("talk.otherSaid")}
         className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-border bg-surface transition active:scale-95"

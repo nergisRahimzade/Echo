@@ -1,6 +1,7 @@
 import EnrollFlow from "@/components/EnrollFlow";
 import Header from "@/components/Header";
 import MainNav from "@/components/MainNav";
+import UsageGuide from "@/components/UsageGuide";
 import UserGate from "@/components/UserGate";
 
 export default function EnrollPage() {
@@ -13,6 +14,7 @@ export default function EnrollPage() {
         <main className="flex flex-1 flex-col">
           <EnrollFlow />
         </main>
+        <UsageGuide tour="enroll" />
       </UserGate>
     </div>
   );

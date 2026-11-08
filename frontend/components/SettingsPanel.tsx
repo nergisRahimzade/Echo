@@ -14,11 +14,10 @@ export default function SettingsPanel() {
     <div className="mx-auto flex w-full max-w-xl flex-col gap-8 px-4 py-6">
       <h1 className="text-3xl font-bold">{t("settings.title")}</h1>
 
-      <section className="flex flex-col gap-3" aria-labelledby="lang-heading">
+      <section className="flex flex-col gap-3" aria-labelledby="lang-heading" data-guide="settings-language">
         <h2 id="lang-heading" className="text-xl font-semibold">
           {t("settings.language")}
         </h2>
-        <p className="text-muted">{t("settings.languageHelp")}</p>
         <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-labelledby="lang-heading">
           {UI_LANGUAGES.map((l) => (
             <button

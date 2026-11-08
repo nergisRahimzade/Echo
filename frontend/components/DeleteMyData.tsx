@@ -38,7 +38,7 @@ export default function DeleteMyData() {
   const button = "flex min-h-16 items-center justify-center gap-3 rounded-2xl px-5 text-lg font-semibold transition active:scale-95";
 
   return (
-    <section className="flex flex-col gap-3" aria-labelledby="privacy-heading">
+    <section className="flex flex-col gap-3" aria-labelledby="privacy-heading" data-guide="settings-privacy">
       <h2 id="privacy-heading" className="text-xl font-semibold">
         {t("settings.privacy")}
       </h2>

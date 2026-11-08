@@ -42,11 +42,10 @@ export default function VoicePicker() {
   };
 
   return (
-    <section className="flex flex-col gap-3" aria-labelledby="voice-heading">
+    <section className="flex flex-col gap-3" aria-labelledby="voice-heading" data-guide="settings-voice">
       <h2 id="voice-heading" className="text-xl font-semibold">
         {t("settings.voice")}
       </h2>
-      <p className="text-muted">{t("settings.voiceHelp")}</p>
 
       {loadFailed && (
         <p role="alert" className="text-danger">

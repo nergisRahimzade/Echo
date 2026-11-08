@@ -23,6 +23,7 @@ export default function MainNav({ current }: { current?: string }) {
           aria-label={t(label)}
           title={t(label)}
           aria-current={current === href ? "page" : undefined}
+          data-guide={`nav-${href.slice(1)}`}
           className={`flex h-16 w-16 items-center justify-center rounded-2xl border-2 transition active:scale-95 ${
             current === href ? "border-primary bg-primary/10 text-primary" : "border-border"
           }`}

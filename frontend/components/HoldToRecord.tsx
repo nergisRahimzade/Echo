@@ -138,7 +138,7 @@ export default function HoldToRecord({
 
   return (
     <div className="flex w-full max-w-md flex-col items-center gap-4">
-      <div className="relative w-full">
+      <div className="relative w-full" data-guide="record">
         {/* Level halo: grows with the loudness of the voice */}
         <div
           aria-hidden
@@ -194,6 +194,7 @@ export default function HoldToRecord({
           type="button"
           onClick={toggleMode}
           disabled={isRecording}
+          data-guide="record-mode"
           // The accessible name starts with the visible word, so voice control ("tap Hold") works.
           aria-label={`${modeWord}: ${mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}`}
           title={mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}
