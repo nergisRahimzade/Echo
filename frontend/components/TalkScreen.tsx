@@ -174,9 +174,20 @@ export default function TalkScreen() {
 
         {stage.kind === "spoken" && (
           <>
-            <p className="text-center text-4xl font-bold leading-tight sm:text-5xl" lang={stage.result.language} data-testid="listener-sentence">
-              {stage.result.sentence}
-            </p>
+           
+<div className="w-full rounded-3xl border-2 border-primary/30 bg-surface px-6 py-10 text-center shadow-lg">
+  <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-primary">
+    Your message
+  </p>
+  <p
+    className="text-3xl font-bold leading-relaxed text-foreground sm:text-5xl"
+    lang={stage.result.language}
+    data-testid="listener-sentence"
+  >
+    {stage.result.sentence}
+  </p>
+</div>
+
             {!stage.undo && <ListenerView sentence={stage.result.sentence} language={stage.result.language} />}
             {stage.undo && (
               <CountdownThumbDown
