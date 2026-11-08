@@ -33,8 +33,6 @@ export const TOURS: Record<TourId, GuideStep[]> = {
   talk: [
     ...NAV,
     { id: "talkRecord", target: "record", place: "right", radius: 24 },
-    { id: "recordMode", target: "record-mode", place: "right" },
-    { id: "otherSaid", target: "other-said", place: "top" },
     { id: "newConversation", target: "new-conversation", place: "top" },
     { id: "learned", target: "learned", place: "top", radius: 999 },
     { id: "health", target: "health", place: "top", radius: 999 },

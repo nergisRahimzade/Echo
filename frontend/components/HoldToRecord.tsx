@@ -1,46 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Hand, Loader2, Mic, MicOff, Pointer, Square } from "lucide-react";
+import { Hand, Loader2, Mic, MicOff, Square } from "lucide-react";
 import { useRecorder, type Recording } from "@/lib/useRecorder";
 import { useT } from "@/lib/i18n";
 import { unlockAudio } from "@/lib/voice";
-
-export type RecordMode = "hold" | "tap";
-const MODE_KEY = "echo.recordMode";
-
-const MODE_EVENT = "echo:recordmode";
-
-/** Tap to start + tap to stop is the default; "hold" only if the user switched to it. */
-function loadMode(): RecordMode {
-  try {
-    return window.localStorage.getItem(MODE_KEY) === "hold" ? "hold" : "tap";
-  } catch {
-    return "tap";
-  }
-}
-
-/** The record mode, shared by every component that shows it (button, talk-page hint). */
-export function useRecordMode(): [RecordMode, (mode: RecordMode) => void] {
-  const [mode, setModeState] = useState<RecordMode>("tap");
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount
-    setModeState(loadMode());
-    const sync = () => setModeState(loadMode());
-    window.addEventListener(MODE_EVENT, sync);
-    return () => window.removeEventListener(MODE_EVENT, sync);
-  }, []);
-  const setMode = (next: RecordMode) => {
-    setModeState(next);
-    try {
-      window.localStorage.setItem(MODE_KEY, next);
-    } catch {
-      /* storage blocked: the choice lasts until the page reloads */
-    }
-    window.dispatchEvent(new Event(MODE_EVENT));
-  };
-  return [mode, setMode];
-}
 
 function formatTime(ms: number): string {
   const s = Math.floor(ms / 1000);
@@ -48,19 +12,15 @@ function formatTime(ms: number): string {
 }
 
 /**
- * The big record button.
- * - "tap" mode (default): tap once to start, tap again to stop.
- * - "hold" mode: press and hold to record, let go to stop (switchable under the button).
+ * The big record button: tap once to start, tap again to stop.
  * Keyboard / switch access: Space or Enter works the same way.
  */
 export default function HoldToRecord({
   onRecorded,
   disabled = false,
-  showModeToggle = true,
 }: {
   onRecorded: (rec: Recording) => void;
   disabled?: boolean;
-  showModeToggle?: boolean;
 }) {
   const t = useT();
   const [tooShort, setTooShort] = useState(false);
@@ -68,8 +28,7 @@ export default function HoldToRecord({
     onRecorded,
     onTooShort: () => setTooShort(true),
   });
-  const [mode, setMode] = useRecordMode();
-  // The "hold longer" hint disappears after a few seconds or when a new recording starts.
+  // The "speak longer" hint disappears after a few seconds or when a new recording starts.
   useEffect(() => {
     if (!tooShort) return;
     const t = setTimeout(() => setTooShort(false), 3000);
@@ -79,46 +38,26 @@ export default function HoldToRecord({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset hint when recording starts
     if (isRecording) setTooShort(false);
   }, [isRecording]);
-  const toggleMode = () => setMode(mode === "hold" ? "tap" : "hold");
 
-  const modeWord = mode === "hold" ? t("recorder.modeHold") : t("recorder.modeTap");
   const busy = status === "starting";
   const blocked = disabled || status === "denied" || status === "unsupported";
 
-  // --- Hold mode: pointer down/up. Pointer capture keeps recording if the finger slides off. ---
-  const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+  const toggle = () => {
     unlockAudio(); // lets Echo's answer play by itself later (phones block sound not started by a tap)
-    if (mode !== "hold" || blocked || e.button !== 0) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    start();
-  };
-  const onPointerUp = () => {
-    unlockAudio();
-    if (mode === "hold") stop();
-  };
-
-  // --- Tap mode: click toggles. ---
-  const onClick = () => {
-    unlockAudio();
-    if (mode !== "tap" || blocked) return;
+    if (blocked) return;
     if (isRecording || busy) stop();
     else start();
   };
 
-  // --- Keyboard / switch access ---
-  const isActivationKey = (e: React.KeyboardEvent) => e.key === " " || e.key === "Enter";
+  // Space and Enter already click a button; handled here so a held key doesn't start and stop over and over.
   const onKeyDown = (e: React.KeyboardEvent) => {
-    if (!isActivationKey(e) || e.repeat || blocked) return;
+    if (e.key !== " " && e.key !== "Enter") return;
     e.preventDefault();
-    unlockAudio();
-    if (mode === "hold") start();
-    else if (isRecording || busy) stop();
-    else start();
+    if (!e.repeat) toggle();
   };
+  // Space clicks on key-up in some browsers: cancel it so one press is one toggle.
   const onKeyUp = (e: React.KeyboardEvent) => {
-    if (!isActivationKey(e)) return;
-    e.preventDefault();
-    if (mode === "hold") stop();
+    if (e.key === " " || e.key === "Enter") e.preventDefault();
   };
 
   const label =
@@ -127,14 +66,10 @@ export default function HoldToRecord({
       : status === "unsupported"
         ? t("recorder.unsupported")
         : isRecording
-          ? mode === "hold"
-            ? t("recorder.recordingHold")
-            : t("recorder.recordingTap")
-          : mode === "hold"
-            ? t("recorder.holdToTalk")
-            : t("recorder.tapToTalk");
+          ? t("recorder.recordingTap")
+          : t("recorder.tapToTalk");
 
-  const Icon = blocked && !disabled ? MicOff : busy ? Loader2 : isRecording ? (mode === "tap" ? Square : Mic) : Mic;
+  const Icon = blocked && !disabled ? MicOff : busy ? Loader2 : isRecording ? Square : Mic;
 
   return (
     <div className="flex w-full max-w-md flex-col items-center gap-4">
@@ -152,10 +87,7 @@ export default function HoldToRecord({
           data-testid="record-button"
           data-recording={isRecording}
           disabled={blocked}
-          onPointerDown={onPointerDown}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          onClick={onClick}
+          onClick={toggle}
           onKeyDown={onKeyDown}
           onKeyUp={onKeyUp}
           onContextMenu={(e) => e.preventDefault()}
@@ -171,7 +103,7 @@ export default function HoldToRecord({
       {tooShort && (
         <p role="status" className="flex items-center gap-2 text-lg font-semibold text-danger" data-testid="too-short">
           <Hand aria-hidden className="h-7 w-7" />
-          {mode === "hold" ? t("recorder.holdLonger") : t("recorder.speakLonger")}
+          {t("recorder.speakLonger")}
         </p>
       )}
 
@@ -188,22 +120,6 @@ export default function HoldToRecord({
           />
         </div>
       </div>
-
-      {showModeToggle && (
-        <button
-          type="button"
-          onClick={toggleMode}
-          disabled={isRecording}
-          data-guide="record-mode"
-          // The accessible name starts with the visible word, so voice control ("tap Hold") works.
-          aria-label={`${modeWord}: ${mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}`}
-          title={mode === "hold" ? t("recorder.switchToTap") : t("recorder.switchToHold")}
-          className="flex min-h-16 min-w-16 items-center justify-center gap-2 rounded-2xl border-2 border-border bg-surface px-4 text-lg transition active:scale-95 disabled:opacity-40"
-        >
-          {mode === "hold" ? <Hand aria-hidden className="h-8 w-8" /> : <Pointer aria-hidden className="h-8 w-8" />}
-          <span className="text-muted">{modeWord}</span>
-        </button>
-      )}
     </div>
   );
 }

@@ -35,18 +35,11 @@
     "agree": "I agree"
   },
   "recorder": {
-    "holdToTalk": "Hold to talk",
     "tapToTalk": "Tap to talk",
-    "recordingHold": "Recording, let go to stop",
     "recordingTap": "Recording, tap to stop",
     "micBlocked": "Microphone blocked",
     "unsupported": "Recording not supported in this browser",
-    "holdLonger": "Hold longer",
-    "speakLonger": "Speak a little longer",
-    "switchToTap": "Switch to tap to start and stop",
-    "switchToHold": "Switch to press and hold",
-    "modeHold": "Hold",
-    "modeTap": "Tap"
+    "speakLonger": "Speak a little longer"
   },
   "enroll": {
     "loadError": "Could not load the phrases.",
@@ -95,10 +88,6 @@
   "talk": {
     "newConversation": "Start a new conversation",
     "sayAgain": "Say it again",
-    "otherSaid": "Type what the other person said",
-    "otherSaidInput": "What the other person said",
-    "saveOtherSaid": "Save what they said",
-    "saveError": "Could not save.",
     "wrong": "That is wrong",
     "hearGuess": "Hear Echo's guess again",
     "no": "No, that is wrong",
@@ -195,14 +184,6 @@
       "talkRecord": {
         "title": "Microphone",
         "body": "Press it and say what you want. Echo listens, then says it clearly for the person you are talking to."
-      },
-      "recordMode": {
-        "title": "Tap or hold",
-        "body": "Choose how the microphone works: tap once to start and again to stop, or hold it while you speak."
-      },
-      "otherSaid": {
-        "title": "What they said",
-        "body": "The other person can type what they said here. Echo uses it to guess your answers better."
       },
       "newConversation": {
         "title": "New conversation",

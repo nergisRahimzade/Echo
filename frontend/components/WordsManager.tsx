@@ -217,7 +217,7 @@ export default function WordsManager() {
                     <X aria-hidden className="h-8 w-8" />
                   </button>
                 </div>
-                {open && <HoldToRecord onRecorded={(rec) => saveRecording(w.word, rec)} disabled={busy} showModeToggle={false} />}
+                {open && <HoldToRecord onRecorded={(rec) => saveRecording(w.word, rec)} disabled={busy} />}
               </li>
             );
           })}

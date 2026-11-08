@@ -35,18 +35,11 @@
     "agree": "Kabul ediyorum"
   },
   "recorder": {
-    "holdToTalk": "Basılı tut ve konuş",
     "tapToTalk": "Dokun ve konuş",
-    "recordingHold": "Kaydediliyor, bitirmek için bırak",
     "recordingTap": "Kaydediliyor, bitirmek için dokun",
     "micBlocked": "Mikrofon engellendi",
     "unsupported": "Bu tarayıcı kayıt yapamıyor",
-    "holdLonger": "Biraz daha uzun bas",
-    "speakLonger": "Biraz daha uzun konuş",
-    "switchToTap": "Dokunarak başlat ve bitir moduna geç",
-    "switchToHold": "Basılı tutma moduna geç",
-    "modeHold": "Basılı tut",
-    "modeTap": "Dokun"
+    "speakLonger": "Biraz daha uzun konuş"
   },
   "enroll": {
     "loadError": "Cümleler yüklenemedi.",
@@ -95,10 +88,6 @@
   "talk": {
     "newConversation": "Yeni bir konuşma başlat",
     "sayAgain": "Tekrar söyle",
-    "otherSaid": "Karşındaki kişinin söylediğini yaz",
-    "otherSaidInput": "Karşındaki kişinin söylediği",
-    "saveOtherSaid": "Söylediğini kaydet",
-    "saveError": "Kaydedilemedi.",
     "wrong": "Bu yanlış",
     "hearGuess": "Echo'nun tahminini tekrar dinle",
     "no": "Hayır, bu yanlış",
@@ -195,14 +184,6 @@
       "talkRecord": {
         "title": "Mikrofon",
         "body": "Bas ve söylemek istediğini söyle. Echo dinler, sonra konuştuğun kişi için net bir şekilde söyler."
-      },
-      "recordMode": {
-        "title": "Dokun ya da basılı tut",
-        "body": "Mikrofonun nasıl çalışacağını seç: başlatmak için bir kez, durdurmak için tekrar dokun ya da konuşurken basılı tut."
-      },
-      "otherSaid": {
-        "title": "Karşındakinin söylediği",
-        "body": "Karşındaki kişi söylediğini buraya yazabilir. Echo bunu cevaplarını daha iyi tahmin etmek için kullanır."
       },
       "newConversation": {
         "title": "Yeni konuşma",

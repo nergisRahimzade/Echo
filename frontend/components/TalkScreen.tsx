@@ -6,7 +6,6 @@ import CheckPanel, { WriteButton } from "@/components/CheckPanel";
 import CountdownThumbDown from "@/components/CountdownThumbDown";
 import HealthBadge from "@/components/HealthBadge";
 import HelperFix from "@/components/HelperFix";
-import HelperTurnInput from "@/components/HelperTurnInput";
 import HoldToRecord from "@/components/HoldToRecord";
 import LearningRing from "@/components/LearningRing";
 import ListenerView from "@/components/ListenerView";
@@ -230,7 +229,6 @@ export default function TalkScreen() {
       </section>
 
       <div className="flex flex-wrap items-center justify-center gap-3">
-        {sessionId && <HelperTurnInput userId={user.user_id} sessionId={sessionId} />}
         <button
           type="button"
           onClick={newConversation}

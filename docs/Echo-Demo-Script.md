@@ -9,7 +9,7 @@ People with dysarthria (after a stroke, or with ALS or Parkinson's) know exactly
 but strangers can't understand them. General speech recognition fails on their voice. Echo learns *their* voice.
 
 ## 2. Live demo (2 min)
-1. **Turkish:** hold the button and say "Bugün kendimi daha iyi hissediyorum." Echo says it clearly.
+1. **Turkish:** tap the button, say "Bugün kendimi daha iyi hissediyorum.", then tap it again. Echo says it clearly.
 2. **English:** say "Can you call Zeynep for me?" The same session handles the other language.
 3. **A check:** mumble "Biraz dinlenmek istiyorum." The score is under 0.80, so Echo plays it back
    privately. Tap 👍 and Echo says it to the listener.
