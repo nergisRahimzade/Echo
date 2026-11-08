@@ -237,15 +237,20 @@ export default function TalkScreen() {
       </section>
 
       
-{/* User Mode: accessible recording area */}
-<section className="flex w-full flex-col items-center gap-4 rounded-3xl border border-border bg-surface p-5 shadow-lg">
-  <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-    {stage.kind === "repeat" ? "Try speaking again" : "Your voice, your way"}
-  </span>
 
-        {/* Shown only once the conversation id exists, so it never flashes in a faded, disabled state. */}
-        {showRecorder && sessionId && <HoldToRecord onRecorded={onRecorded} />}
-      </section>
+{/* User Mode: show recording controls only when needed */}
+{showRecorder && sessionId && stage.kind !== "spoken" && (
+  <section className="flex w-full flex-col items-center gap-4 rounded-3xl border border-border bg-surface p-5 shadow-lg">
+    <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+      {stage.kind === "repeat"
+        ? "Try speaking again"
+        : "Your voice, your way"}
+    </span>
+
+    <HoldToRecord onRecorded={onRecorded} />
+  </section>
+)}
+
 
       <div className="flex flex-wrap items-center justify-center gap-3">
         {sessionId && <HelperTurnInput userId={user.user_id} sessionId={sessionId} />}
