@@ -89,10 +89,10 @@
       "other": "Başka bir kelime"
     },
     "placeholders": {
-      "person": "Zeynep, Ali…",
-      "place": "Kadıköy, park…",
-      "pet": "Pamuk, Boncuk…",
-      "other": "Çay, futbol…"
+      "person": "Jessica, Zeynep…",
+      "place": "Sacramento, Kadıköy…",
+      "pet": "Max, Pamuk…",
+      "other": "Coffee, çay…"
     }
   },
   "talk": {
@@ -114,10 +114,14 @@
     "flip": "Karşıda oturan biri için ters çevir",
     "learned": "{n} cümle öğrenildi",
     "heading": "Echo: konuş",
-    "intro": "Sana yardım edebilmem için mikrofona basılı tutarak konuşmaya başla",
+    "intro": "Sana yardım edebilmem için mikrofona basarak konuşmaya başla. Bitirince tekrar bas.",
     "upHelp": "Cümle doğruysa başparmak yukarı simgesine bas",
     "downHelp": "Cümle yanlışsa başparmak aşağı simgesine bas",
-    "downHelpLast": "Cümle yanlışsa başparmak aşağı simgesine bas. Bu sefer de yanlışsa, lütfen ne demek istediğini yaz."
+    "downHelpLast": "Cümle yanlışsa başparmak aşağı simgesine bas. Bu sefer de yanlışsa, lütfen ne demek istediğini yaz.",
+    "introHold": "Sana yardım edebilmem için mikrofona basılı tutarak konuşmaya başla",
+    "writeIt": "Ne demek istediğini yaz",
+    "writeQuestion": "Ne demek istedin?",
+    "cancelWrite": "Geri dön"
   },
   "settings": {
     "title": "Ayarlar",

@@ -1,16 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { HandHelping, Loader2, Send } from "lucide-react";
+import { ArrowLeft, HandHelping, Loader2, Send } from "lucide-react";
 import { useT } from "@/lib/i18n";
 
 /**
  * After two wrong guesses Echo stops guessing. A big "helper" icon opens a text box where the
  * listener or a caregiver types what was meant; it is saved as a correction Echo learns from.
+ * `direct` = the user chose "write what you meant" themselves: the text box opens at once,
+ * asks "What did you mean to say?", and has a back button (onCancel) in case of a mis-tap.
  */
-export default function HelperFix({ onSubmit }: { onSubmit: (text: string) => Promise<void> }) {
+export default function HelperFix({
+  onSubmit,
+  direct = false,
+  onCancel,
+}: {
+  onSubmit: (text: string) => Promise<void>;
+  direct?: boolean;
+  onCancel?: () => void;
+}) {
   const t = useT();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(direct);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -46,7 +56,7 @@ export default function HelperFix({ onSubmit }: { onSubmit: (text: string) => Pr
     >
       <label className="flex flex-col gap-2">
         <span className="flex items-center gap-2 text-lg text-muted">
-          <HandHelping aria-hidden className="h-6 w-6" /> {t("talk.helperQuestion")}
+          <HandHelping aria-hidden className="h-6 w-6" /> {t(direct ? "talk.writeQuestion" : "talk.helperQuestion")}
         </span>
         <textarea
           autoFocus
@@ -57,14 +67,30 @@ export default function HelperFix({ onSubmit }: { onSubmit: (text: string) => Pr
           className="rounded-2xl border-2 border-border bg-surface p-4 text-2xl outline-none focus:border-primary"
         />
       </label>
-      <button
-        type="submit"
-        disabled={busy || !text.trim()}
-        aria-label={t("talk.saveAndSay")}
-        className="flex min-h-20 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-lg transition active:scale-95 disabled:opacity-40"
-      >
-        {busy ? <Loader2 aria-hidden className="h-9 w-9 animate-spin" /> : <Send aria-hidden className="h-9 w-9" />}
-      </button>
+      <div className="flex gap-3">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={busy}
+            aria-label={t("talk.cancelWrite")}
+            title={t("talk.cancelWrite")}
+            data-testid="write-cancel"
+            className="flex min-h-20 w-20 shrink-0 items-center justify-center rounded-3xl border-2 border-border bg-surface transition active:scale-95 disabled:opacity-40"
+          >
+            <ArrowLeft aria-hidden className="h-9 w-9" />
+          </button>
+        )}
+        <button
+          type="submit"
+          disabled={busy || !text.trim()}
+          aria-label={t("talk.saveAndSay")}
+          data-testid="helper-submit"
+          className="flex min-h-20 flex-1 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-lg transition active:scale-95 disabled:opacity-40"
+        >
+          {busy ? <Loader2 aria-hidden className="h-9 w-9 animate-spin" /> : <Send aria-hidden className="h-9 w-9" />}
+        </button>
+      </div>
     </form>
   );
 }

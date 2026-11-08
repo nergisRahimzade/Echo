@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, MessageSquarePlus, Repeat, RotateCcw } from "lucide-react";
-import CheckPanel from "@/components/CheckPanel";
+import CheckPanel, { WriteButton } from "@/components/CheckPanel";
 import CountdownThumbDown from "@/components/CountdownThumbDown";
 import HealthBadge from "@/components/HealthBadge";
 import HelpText from "@/components/HelpText";
 import HelperFix from "@/components/HelperFix";
 import HelperTurnInput from "@/components/HelperTurnInput";
-import HoldToRecord from "@/components/HoldToRecord";
+import HoldToRecord, { useRecordMode } from "@/components/HoldToRecord";
 import LearningRing from "@/components/LearningRing";
 import ListenerView from "@/components/ListenerView";
 import ThinkingAnimation from "@/components/ThinkingAnimation";
@@ -29,7 +29,7 @@ type Stage =
   | { kind: "spoken"; result: TranslateResult; undo: boolean } // said aloud; undo = thumbs-down still offered
   | { kind: "check"; result: TranslateResult; busy: boolean } // played privately, waiting for 👍 / 👎
   | { kind: "repeat"; result: TranslateResult } // wrong guess: say it again
-  | { kind: "helper"; result: TranslateResult } // second wrong guess: a helper types it
+  | { kind: "helper"; result: TranslateResult; direct?: boolean } // a helper types it (direct = user chose "write it")
   | { kind: "error"; message: string };
 
 /**
@@ -45,6 +45,7 @@ export default function TalkScreen() {
   const learnedOne = () => setLearnedKey((k) => k + 1);
   // true after the first 👎: the user is saying it again, and one more 👎 brings the helper.
   const [lastTry, setLastTry] = useState(false);
+  const [recordMode] = useRecordMode(); // the hint matches how the mic button works (tap or hold)
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is only readable after mount
   useEffect(() => setSessionId(currentSessionId()), []);
@@ -74,6 +75,9 @@ export default function TalkScreen() {
     setStage({ kind: "helper", result });
     void playPrompt("helper", uiLang);
   }, [uiLang]);
+
+  /** The user wants to type the right sentence now, without pressing 👎 twice. */
+  const writeCorrection = (result: TranslateResult) => setStage({ kind: "helper", result, direct: true });
 
   const afterThumbsDown = (result: TranslateResult, nextAction: string) =>
     nextAction === "helper" ? callHelper(result) : askToRepeat(result);
@@ -154,7 +158,9 @@ export default function TalkScreen() {
       <h1 className="sr-only">{t("talk.heading")}</h1>
       {/* Listener area: large text, only ever shows sentences that were said aloud */}
       <section className="flex min-h-48 flex-1 flex-col items-center justify-center gap-6" aria-live="polite">
-        {stage.kind === "idle" && <HelpText text={t("talk.intro")} language={uiLang} testId="talk-intro" />}
+        {stage.kind === "idle" && (
+          <HelpText text={t(recordMode === "hold" ? "talk.introHold" : "talk.intro")} language={uiLang} testId="talk-intro" />
+        )}
 
         {stage.kind === "thinking" && <ThinkingAnimation />}
 
@@ -165,12 +171,15 @@ export default function TalkScreen() {
             </p>
             {!stage.undo && <ListenerView sentence={stage.result.sentence} language={stage.result.language} />}
             {stage.undo && (
-              <CountdownThumbDown
-                seconds={UNDO_SECONDS}
-                lastTry={lastTry}
-                onDown={() => flagSpokenAsWrong(stage.result)}
-                onExpire={() => confirmSpoken(stage.result)}
-              />
+              <>
+                <CountdownThumbDown
+                  seconds={UNDO_SECONDS}
+                  lastTry={lastTry}
+                  onDown={() => flagSpokenAsWrong(stage.result)}
+                  onExpire={() => confirmSpoken(stage.result)}
+                />
+                <WriteButton onClick={() => writeCorrection(stage.result)} />
+              </>
             )}
           </>
         )}
@@ -182,6 +191,7 @@ export default function TalkScreen() {
             lastTry={lastTry}
             onUp={() => checkAnswer(stage.result, "up")}
             onDown={() => checkAnswer(stage.result, "down")}
+            onWrite={() => writeCorrection(stage.result)}
           />
         )}
 
@@ -193,7 +203,15 @@ export default function TalkScreen() {
           </div>
         )}
 
-        {stage.kind === "helper" && <HelperFix onSubmit={(text) => submitHelperFix(stage.result, text)} />}
+        {stage.kind === "helper" && (
+          <HelperFix
+            key={stage.direct ? "direct" : "helper"}
+            direct={stage.direct}
+            onSubmit={(text) => submitHelperFix(stage.result, text)}
+            // A mis-tap on "write it": back to checking Echo's guess.
+            onCancel={stage.direct ? () => setStage({ kind: "check", result: stage.result, busy: false }) : undefined}
+          />
+        )}
 
         {stage.kind === "error" && (
           <div role="alert" className="flex flex-col items-center gap-3 text-center">

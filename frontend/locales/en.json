@@ -89,10 +89,10 @@
       "other": "Another word"
     },
     "placeholders": {
-      "person": "Zeynep, Ali…",
-      "place": "Kadıköy, the park…",
-      "pet": "Pamuk, Max…",
-      "other": "Tea, football…"
+      "person": "Jessica, Zeynep…",
+      "place": "Sacramento, Kadıköy…",
+      "pet": "Max, Pamuk…",
+      "other": "Coffee, çay…"
     }
   },
   "talk": {
@@ -114,10 +114,14 @@
     "flip": "Turn upside down for someone sitting opposite",
     "learned": "{n} sentences learned",
     "heading": "Echo: talk",
-    "intro": "Start speaking by holding the microphone for me to help you",
+    "intro": "Start speaking by pressing the microphone for me to help you. Press it again when you are done.",
     "upHelp": "Press thumbs up if the sentence is correct",
     "downHelp": "Press thumbs down if the sentence is wrong",
-    "downHelpLast": "Press thumbs down if the sentence is wrong. If it's wrong this time, please write what you meant to say."
+    "downHelpLast": "Press thumbs down if the sentence is wrong. If it's wrong this time, please write what you meant to say.",
+    "introHold": "Start speaking by holding the microphone for me to help you",
+    "writeIt": "Write what you meant",
+    "writeQuestion": "What did you mean to say?",
+    "cancelWrite": "Go back"
   },
   "settings": {
     "title": "Settings",

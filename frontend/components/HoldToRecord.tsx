@@ -9,12 +9,37 @@ import { unlockAudio } from "@/lib/voice";
 export type RecordMode = "hold" | "tap";
 const MODE_KEY = "echo.recordMode";
 
+const MODE_EVENT = "echo:recordmode";
+
+/** Tap to start + tap to stop is the default; "hold" only if the user switched to it. */
 function loadMode(): RecordMode {
   try {
-    return window.localStorage.getItem(MODE_KEY) === "tap" ? "tap" : "hold";
+    return window.localStorage.getItem(MODE_KEY) === "hold" ? "hold" : "tap";
   } catch {
-    return "hold";
+    return "tap";
   }
+}
+
+/** The record mode, shared by every component that shows it (button, talk-page hint). */
+export function useRecordMode(): [RecordMode, (mode: RecordMode) => void] {
+  const [mode, setModeState] = useState<RecordMode>("tap");
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount
+    setModeState(loadMode());
+    const sync = () => setModeState(loadMode());
+    window.addEventListener(MODE_EVENT, sync);
+    return () => window.removeEventListener(MODE_EVENT, sync);
+  }, []);
+  const setMode = (next: RecordMode) => {
+    setModeState(next);
+    try {
+      window.localStorage.setItem(MODE_KEY, next);
+    } catch {
+      /* storage blocked: the choice lasts until the page reloads */
+    }
+    window.dispatchEvent(new Event(MODE_EVENT));
+  };
+  return [mode, setMode];
 }
 
 function formatTime(ms: number): string {
@@ -24,8 +49,8 @@ function formatTime(ms: number): string {
 
 /**
  * The big record button.
- * - "hold" mode: press and hold to record, let go to stop.
- * - "tap" mode: tap once to start, tap again to stop (for users who can't hold).
+ * - "tap" mode (default): tap once to start, tap again to stop.
+ * - "hold" mode: press and hold to record, let go to stop (switchable under the button).
  * Keyboard / switch access: Space or Enter works the same way.
  */
 export default function HoldToRecord({
@@ -43,7 +68,7 @@ export default function HoldToRecord({
     onRecorded,
     onTooShort: () => setTooShort(true),
   });
-  const [mode, setMode] = useState<RecordMode>("hold");
+  const [mode, setMode] = useRecordMode();
   // The "hold longer" hint disappears after a few seconds or when a new recording starts.
   useEffect(() => {
     if (!tooShort) return;
@@ -54,18 +79,7 @@ export default function HoldToRecord({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset hint when recording starts
     if (isRecording) setTooShort(false);
   }, [isRecording]);
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount
-  useEffect(() => setMode(loadMode()), []);
-
-  const toggleMode = () => {
-    const next: RecordMode = mode === "hold" ? "tap" : "hold";
-    setMode(next);
-    try {
-      window.localStorage.setItem(MODE_KEY, next);
-    } catch {
-      /* ignore */
-    }
-  };
+  const toggleMode = () => setMode(mode === "hold" ? "tap" : "hold");
 
   const modeWord = mode === "hold" ? t("recorder.modeHold") : t("recorder.modeTap");
   const busy = status === "starting";
