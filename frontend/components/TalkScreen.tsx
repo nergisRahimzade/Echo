@@ -189,6 +189,18 @@ export default function TalkScreen() {
 </div>
 
             {!stage.undo && <ListenerView sentence={stage.result.sentence} language={stage.result.language} />}
+            
+            {!stage.undo && (
+            <button
+              type="button"
+              onClick={() => setStage({ kind: "idle" })}
+              className="flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-primary px-6 py-4 text-xl font-semibold text-primary-foreground transition active:scale-95"
+            >
+              <Repeat aria-hidden="true" className="h-7 w-7" />
+              Speak Again
+            </button>
+          )}
+
             {stage.undo && (
               <CountdownThumbDown
                 seconds={UNDO_SECONDS}
