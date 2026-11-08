@@ -254,7 +254,7 @@ export default function EnrollFlow() {
           <Volume2 aria-hidden className="h-10 w-10" strokeWidth={2.5} />
         </button>
       </div>
-      <p className="text-center text-xl text-muted">{phrase.text}</p>
+      <p className="text-center text-[22px] leading-[1.4] text-muted">{phrase.text}</p>
 
       {recording ? (
         <div className="flex w-full items-center justify-center gap-5" data-testid="enroll-review">
