@@ -25,9 +25,13 @@ def fake_env(monkeypatch, tmp_path):
     monkeypatch.setenv("UPLOADS_DIR", str(tmp_path / "uploads"))
     from app.config import get_settings
 
+    from app.services import elevenlabs
+
     get_settings.cache_clear()
+    elevenlabs.reset()
     yield
     get_settings.cache_clear()
+    elevenlabs.reset()
 
 
 @pytest.fixture

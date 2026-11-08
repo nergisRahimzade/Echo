@@ -11,7 +11,7 @@ import httpx
 from starlette.concurrency import run_in_threadpool
 
 from app.config import get_settings
-from app.services import voices
+from app.services import elevenlabs, voices
 
 logger = logging.getLogger("echo.tts")
 API = "https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
@@ -67,7 +67,9 @@ async def synthesize(
     elevenlabs_id = voices.get(voice).elevenlabs_id
     path = cache_path(text, language, elevenlabs_id)
     if path.exists():
-        return await run_in_threadpool(path.read_bytes), True
+        return await run_in_threadpool(path.read_bytes), True  # saved audio still plays without credits
+    if elevenlabs.out_of_credits():
+        raise TTSUnavailable("ElevenLabs is out of credits")
 
     own = client is None
     client = client or httpx.AsyncClient(timeout=20)
@@ -89,6 +91,7 @@ async def synthesize(
         if own:
             await client.aclose()
     if res.status_code != 200 or not res.content:
+        elevenlabs.note_response(res)
         raise TTSUnavailable(f"ElevenLabs error {res.status_code}: {res.text[:200]}")
 
     def save() -> None:

@@ -83,7 +83,12 @@ async def add_enrollment(db, uid: str, start: datetime, audio_dir: Path | None, 
             if recording:
                 data, ext = recording.read_bytes(), recording.suffix.lstrip(".")
             elif use_tts:
-                data, _ = await tts.synthesize(phrase.text, lang, voice)
+                try:
+                    data, _ = await tts.synthesize(phrase.text, lang, voice)
+                except tts.TTSUnavailable as exc:
+                    # e.g. out of credits: the account still works, just without recordings to match against.
+                    print(f"  ElevenLabs unavailable ({exc}): skipping the remaining enrollment recordings")
+                    return saved
                 ext = "mp3"
             else:
                 continue
