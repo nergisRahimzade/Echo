@@ -87,6 +87,7 @@ export const STEPS = {
   settingsLanguage: step("settingsLanguage", "settings-language", "bottom", { pad: 12 }),
   settingsTheme: step("settingsTheme", "settings-theme", "bottom", { pad: 12 }),
   settingsVoice: step("settingsVoice", "settings-voice", "top", { pad: 12 }),
+  settingsSignOut: step("settingsSignOut", "settings-signout", "top", { pad: 12 }),
   settingsPrivacy: step("settingsPrivacy", "settings-privacy", "top", { pad: 12 }),
 } satisfies Record<string, GuideStep>;
 
@@ -153,7 +154,7 @@ export const PAGES: Record<PageId, PageGuide> = {
   },
   settings: {
     ready: "settings-language",
-    steps: ["settingsLanguage", "settingsTheme", "settingsVoice", "settingsPrivacy", "guideButton"],
+    steps: ["settingsLanguage", "settingsTheme", "settingsVoice", "settingsSignOut", "settingsPrivacy", "guideButton"],
     moments: [],
   },
 };

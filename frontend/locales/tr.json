@@ -140,7 +140,11 @@
     "startOver": "Yeniden başla",
     "theme": "Renkler",
     "themeLight": "Açık",
-    "themeDark": "Koyu"
+    "themeDark": "Koyu",
+    "signOut": "Çıkış yap",
+    "signOutHelp": "Echo bu cihazda seni unutur ve kayıt sayfasına döner. Kayıtların saklı kalır, ama şimdilik onlara yeniden giriş yapmanın bir yolu yok.",
+    "signOutConfirm": "Çıkış yap",
+    "signOutCancel": "Oturumu açık tut"
   },
   "prompts": {
     "sayAgain": "Lütfen tekrar söyle.",
@@ -340,6 +344,10 @@
       "wordsDelete": {
         "title": "Sil",
         "body": "Artık ihtiyacın olmayan bir kelimeyi kaldır."
+      },
+      "settingsSignOut": {
+        "title": "Çıkış yap",
+        "body": "Kayıt sayfasına dön, örneğin Echo'yu başka biri için kurmak için."
       }
     }
   }

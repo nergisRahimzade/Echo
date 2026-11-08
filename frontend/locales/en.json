@@ -140,7 +140,11 @@
     "startOver": "Start again",
     "theme": "Colours",
     "themeLight": "Light",
-    "themeDark": "Dark"
+    "themeDark": "Dark",
+    "signOut": "Sign out",
+    "signOutHelp": "Echo forgets you on this device and goes back to the sign-up page. Your recordings stay saved, but there is no way to sign back in to them yet.",
+    "signOutConfirm": "Sign out",
+    "signOutCancel": "Stay signed in"
   },
   "prompts": {
     "sayAgain": "Please say it again.",
@@ -340,6 +344,10 @@
       "wordsDelete": {
         "title": "Delete",
         "body": "Remove a word you don't need any more."
+      },
+      "settingsSignOut": {
+        "title": "Sign out",
+        "body": "Go back to the sign-up page, for example to set Echo up for someone else."
       }
     }
   }

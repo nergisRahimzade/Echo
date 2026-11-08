@@ -2,11 +2,12 @@
 
 import DeleteMyData from "@/components/DeleteMyData";
 import Flag from "@/components/Flag";
+import SignOut from "@/components/SignOut";
 import ThemeToggle from "@/components/ThemeToggle";
 import VoicePicker from "@/components/VoicePicker";
 import { UI_LANGUAGES, useI18n } from "@/lib/i18n";
 
-/** Settings: the app language and Echo's voice and deleting all of the user's data. */
+/** Settings: the app language, colours, Echo's voice, signing out and deleting all of the user's data. */
 export default function SettingsPanel() {
   const { t, lang, setLang } = useI18n();
 
@@ -41,6 +42,8 @@ export default function SettingsPanel() {
       <ThemeToggle />
 
       <VoicePicker />
+
+      <SignOut />
 
       <DeleteMyData />
     </div>
