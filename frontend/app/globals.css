@@ -23,8 +23,6 @@
   --danger-foreground: #111D2A;
 }
 
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
