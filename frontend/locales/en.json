@@ -67,13 +67,10 @@
   "words": {
     "title": "Names and places",
     "subtitle": "Family, friends, places and pets. A helper can type them.",
-    "type": "Type",
     "person": "Person",
     "place": "Place",
     "pet": "Pet",
     "other": "Other",
-    "input": "Name or place",
-    "placeholder": "Zeynep, Kadıköy…",
     "add": "Add",
     "list": "Saved names and places",
     "record": "Record how you say {word}",
@@ -82,7 +79,21 @@
     "loadError": "Could not load the words.",
     "saveError": "Could not save the word.",
     "deleteError": "Could not delete the word.",
-    "recordError": "Could not save the recording."
+    "recordError": "Could not save the recording.",
+    "tabs": "Kinds of names",
+    "empty": "Nothing saved in this tab yet.",
+    "inputs": {
+      "person": "Name of a person",
+      "place": "Name of a place",
+      "pet": "Name of a pet",
+      "other": "Another word"
+    },
+    "placeholders": {
+      "person": "Zeynep, Ali…",
+      "place": "Kadıköy, the park…",
+      "pet": "Pamuk, Max…",
+      "other": "Tea, football…"
+    }
   },
   "talk": {
     "newConversation": "Start a new conversation",
